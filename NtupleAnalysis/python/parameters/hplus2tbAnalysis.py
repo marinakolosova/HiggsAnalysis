@@ -158,14 +158,14 @@ scaleFactors.setupBtagSFInformation(btagPset               = bjetSelection,
 #=================================================================================================
 # QGL selection
 #=================================================================================================
-qglSelection = PSet(
+qglrSelection = PSet(
     QGLRCutValue             = 0.0,
     QGLRCutDirection         = ">=",
     numberOfJetsCutValue     = 10,
     numberOfJetsCutDirection = "<=",
 )
 
-jsonReader.setupQGLInformation(QGLRPset  = qglSelection,
+jsonReader.setupQGLInformation(QGLRPset  = qglrSelection,
                                jsonname_Light  = "QGLdiscriminator_QCD_LightJets.json",
                                jsonname_Gluon  = "QGLdiscriminator_QCD_GluonJets.json")
 
@@ -306,6 +306,6 @@ allSelections = PSet(
     FakeBBjetSelection    = fakeBBjetSelection,
     CommonPlots           = commonPlotsOptions,
     HistogramAmbientLevel = histogramAmbientLevel,
-    QGLRSelection         = qglSelection,
+    QGLRSelection         = qglrSelection,
 )
 
