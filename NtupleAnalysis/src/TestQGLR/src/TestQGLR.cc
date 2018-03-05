@@ -27,6 +27,8 @@ public:
 private:
   // Input parameters (Baseline Bjets)
   const DirectionalCut<int> cfg_BaselineNumberOfBJets;
+  const std::string cfg_BaselineBJetsDiscr;
+  const std::string cfg_BaselineBJetsDiscrWP;
   const DirectionalCut<double> cfg_LdgTopMVACut;
   const DirectionalCut<double> cfg_SubldgTopMVACut;
   const DirectionalCut<double> cfg_MinTopMVACut;
@@ -34,7 +36,9 @@ private:
 
   // Common plots
   CommonPlots fCommonPlots;
-  
+  // CommonPlots fNormalizationSystematicsSignalRegion;  // fixme
+  // CommonPlots fNormalizationSystematicsControlRegion; // fixme
+
   // Event selection classes and event counters (in same order like they are applied)
   Count cAllEvents;
   Count cTrigger;
@@ -51,6 +55,7 @@ private:
   BJetSelection fBaselineBJetSelection;
   METSelection fBaselineMETSelection;
   TopSelectionBDT fBaselineTopSelection;
+  FatJetSelection fBaselineFatJetSelection;
   Count cBaselineSelected;
   Count cBaselineSelectedCR;
   // Inverted selection
@@ -59,20 +64,33 @@ private:
   BJetSelection fInvertedBJetSelection;
   METSelection fInvertedMETSelection;
   TopSelectionBDT fInvertedTopSelection;
+  FatJetSelection fInvertedFatJetSelection;
   Count cInvertedSelected;
   Count cInvertedSelectedCR;
 
   void DoBaselineAnalysis(const JetSelection::Data& jetData, const BJetSelection::Data& bjetData, const int nVertices);
-  void DoInvertedAnalysis(const JetSelection::Data& jetData, const BJetSelection::Data& bjetData, const int nVertices);
+  void DoInvertedAnalysis(const JetSelection::Data& jetData, const int nVertices);
 
-  // Sanity checks
-  WrappedTH1Triplet* hQGLR_isGenuineB;
+  // Splitted histograms
+  HistoSplitter::SplittedTripletTH1s hQGLR_CRone;
+  HistoSplitter::SplittedTripletTH1s hQGLR_SR;
+  HistoSplitter::SplittedTripletTH1s hQGLR_CRtwo;
+  HistoSplitter::SplittedTripletTH1s hQGLR_VR;
   
+  // Sanity checks
+  WrappedTH1 *hBaseline_IsGenuineB; 
+  WrappedTH1 *hInverted_IsGenuineB; 
+
   // FakeB Triplets (Baseline)
-  WrappedTH1Triplet* hBaseline_QGLR_AfterStandardSelections;
+  WrappedTH1Triplet *hBaseline_QGLR_AfterStandardSelections;
+  WrappedTH1Triplet *hBaseline_QGLR_AfterAllSelections;
+  WrappedTH1Triplet *hBaseline_QGLR_AfterCRSelections;
   
   // FakeB Triplets (Inverted)
-  WrappedTH1Triplet* hInverted_QGLR_AfterStandardSelections;
+  WrappedTH1Triplet *hInverted_QGLR_AfterStandardSelections;
+  WrappedTH1Triplet *hInverted_QGLR_AfterAllSelections;
+  WrappedTH1Triplet *hInverted_QGLR_AfterCRSelections;
+
 };
 
 #include "Framework/interface/SelectorFactory.h"
@@ -81,11 +99,13 @@ REGISTER_SELECTOR(TestQGLR);
 TestQGLR::TestQGLR(const ParameterSet& config, const TH1* skimCounters)
   : BaseSelector(config, skimCounters),
     cfg_BaselineNumberOfBJets(config, "FakeBMeasurement.baselineBJetsCut"),
+    cfg_BaselineBJetsDiscr(config.getParameter<std::string>("FakeBMeasurement.baselineBJetsDiscr")),
+    cfg_BaselineBJetsDiscrWP(config.getParameter<std::string>("FakeBMeasurement.baselineBJetsDiscrWP")),
     cfg_LdgTopMVACut(config, "FakeBMeasurement.LdgTopMVACut"),
     cfg_SubldgTopMVACut(config, "FakeBMeasurement.SubldgTopMVACut"),
     cfg_MinTopMVACut(config, "FakeBMeasurement.minTopMVACut"),
     cfg_BjetDiscr(config.getParameter<std::string>("FakeBBjetSelection.bjetDiscr")),
-    fCommonPlots(config.getParameter<ParameterSet>("CommonPlots"), CommonPlots::kHplus2tbAnalysis, fHistoWrapper),
+    fCommonPlots(config.getParameter<ParameterSet>("CommonPlots"), CommonPlots::kFakeBMeasurement, fHistoWrapper),
     // fNormalizationSystematicsSignalRegion(config.getParameter<ParameterSet>("CommonPlots"), CommonPlots::kQCDNormalizationSystematicsSignalRegion, fHistoWrapper), // fixme
     // fNormalizationSystematicsControlRegion(config.getParameter<ParameterSet>("CommonPlots"), CommonPlots::kQCDNormalizationSystematicsControlRegion, fHistoWrapper),// fixme
     cAllEvents(fEventCounter.addCounter("All events")),
@@ -102,6 +122,7 @@ TestQGLR::TestQGLR(const ParameterSet& config, const TH1* skimCounters)
     fBaselineBJetSelection(config.getParameter<ParameterSet>("BJetSelection"), fEventCounter, fHistoWrapper, &fCommonPlots, ""),
     fBaselineMETSelection(config.getParameter<ParameterSet>("METSelection")),
     fBaselineTopSelection(config.getParameter<ParameterSet>("TopSelectionBDT"), fEventCounter, fHistoWrapper, &fCommonPlots, "Baseline"),
+    fBaselineFatJetSelection(config.getParameter<ParameterSet>("FatJetSelection"), fEventCounter, fHistoWrapper, &fCommonPlots, "Baseline"),
     cBaselineSelected(fEventCounter.addCounter("Baseline: selected events")),
     cBaselineSelectedCR(fEventCounter.addCounter("Baseline: selected CR events")),
     cInvertedBTaggingCounter(fEventCounter.addCounter("Inverted: passed b-jet selection")),
@@ -109,36 +130,42 @@ TestQGLR::TestQGLR(const ParameterSet& config, const TH1* skimCounters)
     fInvertedBJetSelection(config.getParameter<ParameterSet>("FakeBBjetSelection")),//, fEventCounter, fHistoWrapper, &fCommonPlots, ""),
     fInvertedMETSelection(config.getParameter<ParameterSet>("METSelection")),
     fInvertedTopSelection(config.getParameter<ParameterSet>("TopSelectionBDT"), fEventCounter, fHistoWrapper, &fCommonPlots, "Inverted"),
+    fInvertedFatJetSelection(config.getParameter<ParameterSet>("FatJetSelection"), fEventCounter, fHistoWrapper, &fCommonPlots, "Inverted"),
     cInvertedSelected(fEventCounter.addCounter("Inverted: selected events")),
     cInvertedSelectedCR(fEventCounter.addCounter("Inverted: selected CR events"))
 { }
 
 
 TestQGLR::~TestQGLR() {  
- 
-  // Non-common histograms
-  delete hQGLR_isGenuineB;
+  // CRone (Baseline b-jets, Inverted Top MVA2)
+  fCommonPlots.getHistoSplitter().deleteHistograms(hQGLR_CRone);
+  // SR (Baseline b-jets, Baseline Top MVA2)
+  fCommonPlots.getHistoSplitter().deleteHistograms(hQGLR_SR);
+  // VR (Inverted b-jets, Inverted Top MVA2)
+  fCommonPlots.getHistoSplitter().deleteHistograms(hQGLR_CRtwo);
+  // VR (Inverted b-jets, Baseline Top MVA2)
+  fCommonPlots.getHistoSplitter().deleteHistograms(hQGLR_VR);
 
   // FakeB Triplets (Baseline)
   delete hBaseline_QGLR_AfterStandardSelections;
+  delete hBaseline_QGLR_AfterAllSelections;
+  delete hBaseline_QGLR_AfterCRSelections;
 
   // FakeB Triplets (Inverted)
   delete hInverted_QGLR_AfterStandardSelections;
+  delete hInverted_QGLR_AfterAllSelections;
+  delete hInverted_QGLR_AfterCRSelections;
+  
 }
 
 void TestQGLR::book(TDirectory *dir) {
 
-  std::string myInclusiveLabel  = "Triplets";
-  std::string myFakeLabel       = myInclusiveLabel+"False";
-  std::string myGenuineLabel    = myInclusiveLabel+"True";
-  TDirectory* myInclusiveDir    = fHistoWrapper.mkdir(HistoLevel::kSystematics, dir, myInclusiveLabel);
-  TDirectory* myFakeDir         = fHistoWrapper.mkdir(HistoLevel::kSystematics, dir, myFakeLabel);
-  TDirectory* myGenuineDir      = fHistoWrapper.mkdir(HistoLevel::kSystematics, dir, myGenuineLabel);
-  std::vector<TDirectory*> myDirs = {myInclusiveDir, myFakeDir, myGenuineDir};
   
   // Book common plots histograms
   fCommonPlots.book(dir, isData());
-  
+  // fNormalizationSystematicsSignalRegion.book(dir, isData()); // fixme
+  // fNormalizationSystematicsControlRegion.book(dir, isData()); // fixme
+
   // Book histograms in event selection classes
   fMETFilterSelection.bookHistograms(dir);
   fElectronSelection.bookHistograms(dir);
@@ -150,36 +177,127 @@ void TestQGLR::book(TDirectory *dir) {
   fBaselineBJetSelection.bookHistograms(dir);
   fBaselineMETSelection.bookHistograms(dir);
   fBaselineTopSelection.bookHistograms(dir);
+  fBaselineFatJetSelection.bookHistograms(dir);
   // Inverted selection
   fInvertedBJetSelection.bookHistograms(dir);
   fInvertedMETSelection.bookHistograms(dir);
   fInvertedTopSelection.bookHistograms(dir);
+  fInvertedFatJetSelection.bookHistograms(dir);
   
   // ====== Histogram settings
   HistoSplitter histoSplitter = fCommonPlots.getHistoSplitter();
+
+  // Obtain binning
+  /*
+  const int nNBins        = fCommonPlots.getNjetsBinSettings().bins();
+  const float fNMin       = fCommonPlots.getNjetsBinSettings().min();
+  const float fNMax       = fCommonPlots.getNjetsBinSettings().max();
+
+  const int nBtagBins     = fCommonPlots.getBJetDiscBinSettings().bins();
+  const float fBtagMin    = fCommonPlots.getBJetDiscBinSettings().min();
+  const float fBtagMax    = fCommonPlots.getBJetDiscBinSettings().max();
+
+  const int  nPtBins      = 2*fCommonPlots.getPtBinSettings().bins();
+  const float fPtMin      = 2*fCommonPlots.getPtBinSettings().min();
+  const float fPtMax      = 2*fCommonPlots.getPtBinSettings().max();
+
+  const int  nEtaBins     = fCommonPlots.getEtaBinSettings().bins();
+  const float fEtaMin     = fCommonPlots.getEtaBinSettings().min();
+  const float fEtaMax     = fCommonPlots.getEtaBinSettings().max();
+
+  const int  nBDiscBins   = fCommonPlots.getBJetDiscBinSettings().bins();
+  const float fBDiscMin   = fCommonPlots.getBJetDiscBinSettings().min();
+  const float fBDiscMax   = fCommonPlots.getBJetDiscBinSettings().max();
+
+  const int nDEtaBins     = fCommonPlots.getDeltaEtaBinSettings().bins();
+  const double fDEtaMin   = fCommonPlots.getDeltaEtaBinSettings().min();
+  const double fDEtaMax   = fCommonPlots.getDeltaEtaBinSettings().max();
+
+  const int nDPhiBins     = fCommonPlots.getDeltaPhiBinSettings().bins();
+  const double fDPhiMin   = fCommonPlots.getDeltaPhiBinSettings().min();
+  const double fDPhiMax   = fCommonPlots.getDeltaPhiBinSettings().max();
+
+  const int nDRBins       = fCommonPlots.getDeltaRBinSettings().bins();
+  const double fDRMin     = fCommonPlots.getDeltaRBinSettings().min();
+  const double fDRMax     = fCommonPlots.getDeltaRBinSettings().max();
+
+  const int nWMassBins    = fCommonPlots.getWMassBinSettings().bins();
+  const float fWMassMin   = fCommonPlots.getWMassBinSettings().min();
+  const float fWMassMax   = fCommonPlots.getWMassBinSettings().max();
+
+  const int nTopMassBins  = fCommonPlots.getTopMassBinSettings().bins();
+  const float fTopMassMin = fCommonPlots.getTopMassBinSettings().min();
+  const float fTopMassMax = fCommonPlots.getTopMassBinSettings().max();
+
+  const int nInvMassBins  = fCommonPlots.getInvMassBinSettings().bins();
+  const float fInvMassMin = fCommonPlots.getInvMassBinSettings().min();
+  const float fInvMassMax = fCommonPlots.getInvMassBinSettings().max();
+
+  const int nMetBins  = fCommonPlots.getMetBinSettings().bins();
+  const float fMetMin = fCommonPlots.getMetBinSettings().min();
+  const float fMetMax = fCommonPlots.getMetBinSettings().max();
+
+  const int nHtBins  = fCommonPlots.getHtBinSettings().bins();
+  const float fHtMin = fCommonPlots.getHtBinSettings().min();
+  const float fHtMax = fCommonPlots.getHtBinSettings().max();
+  */
+  const int nQGLRBins = 100;
+  const float fQGLRMin = 0.0;
+  const float fQGLRMax = 1.0;
+
+  // Create directories for normalization
+  std::string myInclusiveLabel  = "ForFakeBSanity";
+  std::string myFakeLabel       = myInclusiveLabel+"EWKFakeB";
+  std::string myGenuineLabel    = myInclusiveLabel+"EWKGenuineB";
   
-  // Histogram binning options
-  int nQGLBins      = 100;
-  float fQGLMin     = 0.0;
-  float fQGLMax     = 1.0;
-  
-  // Book normal histograms
-  hQGLR_isGenuineB = fHistoWrapper.makeTHTriplet<TH1F>(true, HistoLevel::kVital, myDirs, "QGLR_isGenuineB", "Quark-Gluon likelihood ratio", nQGLBins, fQGLMin, fQGLMax);
-  
-  // Other hustograms
+  // Other histograms
   myInclusiveLabel = "ForFakeBMeasurement";
   myFakeLabel      = myInclusiveLabel+"EWKFakeB";
   myGenuineLabel   = myInclusiveLabel+"EWKGenuineB";
-
   // Create directories
   TDirectory* myFakeBDir         = fHistoWrapper.mkdir(HistoLevel::kSystematics, dir, myInclusiveLabel);
   TDirectory* myFakeBEWKFakeBDir = fHistoWrapper.mkdir(HistoLevel::kSystematics, dir, myFakeLabel);
   TDirectory* myFakeBGenuineBDir = fHistoWrapper.mkdir(HistoLevel::kSystematics, dir, myGenuineLabel);
   std::vector<TDirectory*> myFakeBDirs = {myFakeBDir, myFakeBEWKFakeBDir, myFakeBGenuineBDir};
-
+  
+  // Splitted Histo Triplets
+  histoSplitter.createShapeHistogramTriplet<TH1F>(true, HistoLevel::kSystematics, myFakeBDirs, hQGLR_CRone, "QGLR_CRone", 
+						  ";QGLR;Occur / %0.f", nQGLRBins, fQGLRMin, fQGLRMax);
+  histoSplitter.createShapeHistogramTriplet<TH1F>(true, HistoLevel::kSystematics, myFakeBDirs, hQGLR_SR, "QGLR_SR", 
+  						  ";QGLR;Occur / %0.f", nQGLRBins, fQGLRMin, fQGLRMax);
+  histoSplitter.createShapeHistogramTriplet<TH1F>(true, HistoLevel::kSystematics, myFakeBDirs, hQGLR_CRtwo, "QGLR_CRtwo",
+  						  ";QGLR;Occur / %0.f", nQGLRBins, fQGLRMin, fQGLRMax);
+  histoSplitter.createShapeHistogramTriplet<TH1F>(true, HistoLevel::kSystematics, myFakeBDirs, hQGLR_VR, "QGLR_VR",
+  						  ";QGLR;Occur / %0.f", nQGLRBins, fQGLRMin, fQGLRMax);						 
+  
+  // Normal Histos
+  hBaseline_IsGenuineB = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, myFakeBDir, "Baseline_IsGenuineB", ";is genuine-b;Events / %0.0f", 2, 0.0, 2.0);
+  hInverted_IsGenuineB = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, myFakeBDir, "Inverted_IsGenuineB", ";is genuine-b;Events / %0.0f", 2, 0.0, 2.0);
+  
   // Baseline selection (StandardSelections)
-  hBaseline_QGLR_AfterStandardSelections = fHistoWrapper.makeTHTriplet<TH1F>(true, HistoLevel::kVital, myFakeBDirs, "Baseline_QGLR_AfterStandardSelections", "Quark-Gluon likelihood ratio / %.0f", nQGLBins, fQGLMin, fQGLMax);
-  hInverted_QGLR_AfterStandardSelections = fHistoWrapper.makeTHTriplet<TH1F>(true, HistoLevel::kVital, myFakeBDirs, "Inverted_QGLR_AfterStandardSelections", "Quark-Gluon likelihood ratio / %.0f", nQGLBins, fQGLMin, fQGLMax);
+  hBaseline_QGLR_AfterStandardSelections = 
+    fHistoWrapper.makeTHTriplet<TH1F>(true, HistoLevel::kVital, myFakeBDirs, 
+				      "Baseline_QGLR_AfterStandardSelections", ";QGLR;Occur / %0.f", nQGLRBins, fQGLRMin, fQGLRMax);
+  // Baseline selection (AllSelections)
+  hBaseline_QGLR_AfterAllSelections = 
+    fHistoWrapper.makeTHTriplet<TH1F>(true, HistoLevel::kVital, myFakeBDirs, 
+				      "Baseline_QGLR_AfterAllSelections", ";QGLR;Occur / %0.f", nQGLRBins, fQGLRMin, fQGLRMax);
+  // Baseline selection (CRSelections)
+  hBaseline_QGLR_AfterCRSelections = 
+    fHistoWrapper.makeTHTriplet<TH1F>(true, HistoLevel::kVital, myFakeBDirs, 
+				      "Baseline_QGLR_AfterCRSelections", ";QGLR;Occur / %0.f", nQGLRBins, fQGLRMin, fQGLRMax);
+  // Inverted selection (StandardSelections)
+  hInverted_QGLR_AfterStandardSelections = 
+    fHistoWrapper.makeTHTriplet<TH1F>(true, HistoLevel::kVital, myFakeBDirs, 
+				      "Inverted_QGLR_AfterStandardSelections", ";QGLR;Occur / %0.f", nQGLRBins, fQGLRMin, fQGLRMax);
+  // Inverted selection (AllSelections)
+  hInverted_QGLR_AfterAllSelections = 
+    fHistoWrapper.makeTHTriplet<TH1F>(true, HistoLevel::kVital, myFakeBDirs, 
+				      "Inverted_QGLR_AfterAllSelections", ";QGLR;Occur / %0.f", nQGLRBins, fQGLRMin, fQGLRMax);
+  // Inverted selection (CRSelections)
+  hInverted_QGLR_AfterCRSelections = 
+    fHistoWrapper.makeTHTriplet<TH1F>(true, HistoLevel::kVital, myFakeBDirs, 
+				      "Inverted_QGLR_AfterCRSelections", ";QGLR;Occur / %0.f", nQGLRBins, fQGLRMin, fQGLRMax);
   
   return;
 }
@@ -195,7 +313,9 @@ void TestQGLR::process(Long64_t entry) {
 
   //====== Initialize
   fCommonPlots.initialize();
-  
+  // fNormalizationSystematicsSignalRegion.initialize();  // fixme
+  // fNormalizationSystematicsControlRegion.initialize(); // fixme
+
   cAllEvents.increment();
   int nVertices = fEvent.vertexInfo().value();
   fCommonPlots.setNvertices(nVertices);
@@ -262,19 +382,15 @@ void TestQGLR::process(Long64_t entry) {
   const BJetSelection::Data bjetData = fBaselineBJetSelection.silentAnalyze(fEvent, jetData);
 
   // Baseline Selection
-  if (bjetData.passedSelection())
+  if (bjetData.passedSelection()) 
     {
       DoBaselineAnalysis(jetData, bjetData, nVertices);
     }
   else
     {
-      // CSVv2-Medium
-      bool passMediumCuts = cfg_BaselineNumberOfBJets.passedCut(bjetData.getSelectedBJets().size());
-      if (!passMediumCuts) return;
-      
-      // Do inverted if multiplicity requirement on CSVv2-Medium  is met
-      DoInvertedAnalysis(jetData, bjetData, nVertices);
+      DoInvertedAnalysis(jetData, nVertices); 
     }
+ 
   return;
 }
       
@@ -298,6 +414,9 @@ bool TestQGLR::areSameJets(const Jet& jet1, const Jet& jet2) {
 void TestQGLR::DoBaselineAnalysis(const JetSelection::Data& jetData,
                                           const BJetSelection::Data& bjetData,
                                           const int nVertices){
+
+  if (0) std::cout << "\n=== TestQGLR::DoBaselineAnalysis()" << std::endl;
+
   // Increment counter
   cBaselineBTaggingCounter.increment();
 
@@ -328,6 +447,13 @@ void TestQGLR::DoBaselineAnalysis(const JetSelection::Data& jetData,
   if (!hasFreeBJet) return;
   if (!passMinTopMVACut) return;
 
+  //================================================================================================
+  // *) FatJet veto
+  //================================================================================================
+  if (0) std::cout << "\n=== Baseline: FatJet veto" << std::endl;
+  const FatJetSelection::Data fatjetData = fBaselineFatJetSelection.analyze(fEvent, topData);
+  //if (!fatjetData.passedSelection()) return;
+
   // Defining the splitting of phase-space as the eta of the Tetrajet b-jet
   std::vector<float> myFactorisationInfo;
   myFactorisationInfo.push_back(topData.getTetrajetBJet().eta() );
@@ -336,34 +462,58 @@ void TestQGLR::DoBaselineAnalysis(const JetSelection::Data& jetData,
 
   // If 1 or more untagged genuine bjets are found the event is considered fakeB. Otherwise genuineB  
   bool isGenuineB = bjetData.isGenuineB();
-    
+  hBaseline_IsGenuineB->Fill(isGenuineB);
+  
   //================================================================================================
   // Preselections (aka Standard Selections)
   //================================================================================================
   if (0) std::cout << "=== Baseline: Standard Selections" << std::endl;
-  
-  
-  //================================================================================================
-  // All Selections
-  //================================================================================================  
-  if (!topData.passedSelection()) return;
-
-  if (0) std::cout << "=== Baseline: Signal Region (SR)" << std::endl;
-  cBaselineSelected.increment();
+  // NB: CtrlPlotsAfterStandardSelections should only be called for Inverted!
+  // fCommonPlots.fillControlPlotsAfterStandardSelections(fEvent, jetData, bjetData, METData, topologyData, topData, bjetData.isGenuineB());
 
   //================================================================================================
   // QGLR Selection
   //================================================================================================
   const QuarkGluonLikelihoodRatio::Data qglData = fQuarkGluonLikelihoodRatio.analyze(fEvent, jetData, bjetData);
-  double QGLR = qglData.getQGLR();
   
   // Fill Triplets (Baseline)
-  hBaseline_QGLR_AfterStandardSelections -> Fill(isGenuineB, QGLR);
+  hBaseline_QGLR_AfterStandardSelections -> Fill(isGenuineB, qglData.getQGLR());
+  
+
+  //================================================================================================
+  // All Selections
+  //================================================================================================  
+  if (!topData.passedSelection()) 
+    {
+      // If top fails fill determine if it qualifies for Control Region 1 (CRone)
+      bool passLdgTopMVA    = cfg_LdgTopMVACut.passedCut( topData.getMVAmax1() );
+      bool passSubldgTopMVA = cfg_SubldgTopMVACut.passedCut( topData.getMVAmax2() );
+      bool passInvertedTop  = passLdgTopMVA * passSubldgTopMVA;
+      if (!passInvertedTop) return;
+
+      if (0) std::cout << "=== Baseline: Control Region 1 (CRone)" << std::endl;
+      cBaselineSelectedCR.increment();
+
+      // Fill histos (CR1)
+      hBaseline_QGLR_AfterCRSelections->Fill(isGenuineB, qglData.getQGLR());
+            
+      // Splitted histos
+      fCommonPlots.getHistoSplitter().fillShapeHistogramTriplet(hQGLR_CRone, isGenuineB,  qglData.getQGLR());
+      
+      return;
+    }
+
+  if (0) std::cout << "=== Baseline: Signal Region (SR)" << std::endl;
+  cBaselineSelected.increment();
 
   //================================================================================================
   // Fill final plots
   //================================================================================================
+  hBaseline_QGLR_AfterAllSelections->Fill(isGenuineB, qglData.getQGLR());
   
+  // Splitted Histos
+  fCommonPlots.getHistoSplitter().fillShapeHistogramTriplet(hQGLR_SR, isGenuineB, qglData.getQGLR());
+
   // Save selected event ID for pick events
   fEventSaver.save();
 
@@ -371,18 +521,28 @@ void TestQGLR::DoBaselineAnalysis(const JetSelection::Data& jetData,
 }
 
 void TestQGLR::DoInvertedAnalysis(const JetSelection::Data& jetData,
-				  const BJetSelection::Data& bjetData,
-				  const int nVertices){
+					  const int nVertices){
 
   if (0) std::cout << "\n=== TestQGLR::DoInvertedAnalysis()" << std::endl;
 
   //================================================================================================  
-  // 8) BJet Selection
+  // 8) BJet Selections
   //================================================================================================
   if (0) std::cout << "=== Inverted: BJet selection" << std::endl;
   const BJetSelection::Data invBjetData = fInvertedBJetSelection.silentAnalyze(fEvent, jetData);
   if (!invBjetData.passedSelection()) return;
 
+   // CSVv2-Medium requirement
+   unsigned int nBaselineBjets = 0;
+   for (auto bjet: invBjetData.getSelectedBJets())
+     {
+        double discWP = fInvertedBJetSelection.getDiscriminatorWP( cfg_BaselineBJetsDiscr, cfg_BaselineBJetsDiscrWP);
+       if (bjet.bjetDiscriminator() < discWP) continue;
+       nBaselineBjets++;
+     }
+   bool passBaselineBjetCuts = cfg_BaselineNumberOfBJets.passedCut(nBaselineBjets); 
+   if (!passBaselineBjetCuts) return;
+  
   // Increment counter
   cInvertedBTaggingCounter.increment();
 
@@ -413,36 +573,75 @@ void TestQGLR::DoInvertedAnalysis(const JetSelection::Data& jetData,
   if (!hasFreeBJet) return;
   if (!passMinTopMVACut) return;
 
+  //================================================================================================
+  // *) FatJet veto
+  //================================================================================================
+  if (0) std::cout << "\n=== Inverted: FatJet veto" << std::endl;
+  const FatJetSelection::Data fatjetData = fInvertedFatJetSelection.analyze(fEvent, topData);
+  //if (!fatjetData.passedSelection()) return;
+
   // Defining the splitting of phase-space as the eta of the Tetrajet b-jet
   std::vector<float> myFactorisationInfo;
   myFactorisationInfo.push_back(topData.getTetrajetBJet().eta() );
   fCommonPlots.setFactorisationBinForEvent(myFactorisationInfo);
-  
+  // fNormalizationSystematicsControlRegion.setFactorisationBinForEvent(myFactorisationInfo); //fixme
+  // fNormalizationSystematicsControlRegion.fillControlPlotsAfterTauSelection(fEvent, tauData); //fixme
+
   // If 1 or more untagged genuine bjets are found the event is considered fakeB. Otherwise genuineB
   bool isGenuineB = invBjetData.isGenuineB();
-  
+  hInverted_IsGenuineB->Fill(isGenuineB);
+
   //================================================================================================
   // Preselections (aka Standard Selections)
   //================================================================================================
   if (0) std::cout << "=== Inverted: Preselections" << std::endl;
   fCommonPlots.fillControlPlotsAfterStandardSelections(fEvent, jetData, invBjetData, METData, TopologySelection::Data(), topData, isGenuineB);
-  
-  //================================================================================================
-  // All Selections 
-  //================================================================================================
-  if (!topData.passedSelection()) return;
-  
-  if (0) std::cout << "=== Inverted: Verification Region (VR)" << std::endl;
-  cInvertedSelected.increment();
-  
+
   //================================================================================================
   // QGLR Selection
   //================================================================================================
-  const QuarkGluonLikelihoodRatio::Data qglData = fQuarkGluonLikelihoodRatio.analyze(fEvent, jetData, bjetData);
-  double QGLR = qglData.getQGLR();
+  const QuarkGluonLikelihoodRatio::Data qglData = fQuarkGluonLikelihoodRatio.analyze(fEvent, jetData, invBjetData);
+  
+  // Fill Triplets  (Inverted)
+  hInverted_QGLR_AfterStandardSelections->Fill(isGenuineB, qglData.getQGLR());
+  
+  //================================================================================================
+  // All Selections
+  //================================================================================================
+  if (!topData.passedSelection()) 
+    {
+      // If top fails determine if event fall into  Control Region 2 (CR2)
+      bool passLdgTopMVA    = cfg_LdgTopMVACut.passedCut( topData.getMVAmax1() );
+      bool passSubldgTopMVA = cfg_SubldgTopMVACut.passedCut( topData.getMVAmax2() );
+      bool passInvertedTop  = passLdgTopMVA * passSubldgTopMVA;
+      if (!passInvertedTop) return;
 
-  hInverted_QGLR_AfterStandardSelections -> Fill(isGenuineB, QGLR);
-    
+      if (0) std::cout << "=== Inverted: Control Region 2 (CR2)" << std::endl;
+      cInvertedSelectedCR.increment();
+
+      // Fill plots (CR2)
+      hInverted_QGLR_AfterCRSelections->Fill(isGenuineB, qglData.getQGLR());
+      
+      // Splitted Histos
+      fCommonPlots.getHistoSplitter().fillShapeHistogramTriplet(hQGLR_CRtwo, isGenuineB, qglData.getQGLR());
+      
+      return;
+    }
+
+  if (0) std::cout << "=== Inverted: Verification Region (VR)" << std::endl;
+  cInvertedSelected.increment();
+
+  //================================================================================================
+  // Fill final plots (VR)
+  //================================================================================================
+  fCommonPlots.fillControlPlotsAfterAllSelections(fEvent, (int) isGenuineB);
+
+  // Fill plots (VR)
+  hInverted_QGLR_AfterAllSelections->Fill(isGenuineB, qglData.getQGLR());
+
+  // Splitted histos
+  fCommonPlots.getHistoSplitter().fillShapeHistogramTriplet(hQGLR_VR, isGenuineB, qglData.getQGLR());
+
   // Save selected event ID for pick events
   fEventSaver.save();
 
