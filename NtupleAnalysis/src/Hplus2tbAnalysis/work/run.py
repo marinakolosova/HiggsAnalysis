@@ -122,11 +122,11 @@ def main():
     # Add the datasets (according to user options)
     # ================================================================================================
     if (opts.includeOnlyTasks):
-        Print("Adding only dataset %s from multiCRAB directory %s" % (opts.includeOnlyTasks, opts.mcrab))
+        Verbose("Adding only dataset %s from multiCRAB directory %s" % (opts.includeOnlyTasks, opts.mcrab))
         process.addDatasetsFromMulticrab(opts.mcrab, includeOnlyTasks=opts.includeOnlyTasks)
     elif (opts.excludeTasks):
-        Print("Adding all datasets except %s from multiCRAB directory %s" % (opts.excludeTasks, opts.mcrab))
-        Print("If collision data are present, then vertex reweighting is done according to the chosen data era (era=2015C, 2015D, 2015) etc...")
+        Verbose("Adding all datasets except %s from multiCRAB directory %s" % (opts.excludeTasks, opts.mcrab))
+        Verbose("If collision data are present, then vertex reweighting is done according to the chosen data era (era=2015C, 2015D, 2015) etc...")
         process.addDatasetsFromMulticrab(opts.mcrab, excludeTasks=opts.excludeTasks)
     else:
         myBlackList = ["QCD_b"
@@ -145,16 +145,16 @@ def main():
                        "ChargedHiggs_HplusTB_HplusToTB_M_2500_ext1", 
                        "ChargedHiggs_HplusTB_HplusToTB_M_3000_ext1", 
                        # "ChargedHiggs_HplusTB_HplusToTB_M_1000",
-                       "ChargedHiggs_HplusTB_HplusToTB_M_1500",   # Speeed things up
-                       "ChargedHiggs_HplusTB_HplusToTB_M_2000",   # Speeed things up
-                       "ChargedHiggs_HplusTB_HplusToTB_M_2500",   # Speeed things up
-                       "ChargedHiggs_HplusTB_HplusToTB_M_3000",   # Speeed things up
+                       # "ChargedHiggs_HplusTB_HplusToTB_M_1500",   # Speeed things up
+                       # "ChargedHiggs_HplusTB_HplusToTB_M_2000",   # Speeed things up
+                       # "ChargedHiggs_HplusTB_HplusToTB_M_2500",   # Speeed things up
+                       # "ChargedHiggs_HplusTB_HplusToTB_M_3000",   # Speeed things up
                        "ChargedHiggs_HplusTB_HplusToTB_M_5000",   # Speeed things up
                        "ChargedHiggs_HplusTB_HplusToTB_M_7000",   # Speeed things up  
                        "ChargedHiggs_HplusTB_HplusToTB_M_10000",  # Speeed things up
                        ]
-        if opts.doSystematics:
-            myBlackList.append("QCD")
+        #if opts.doSystematics:
+        #    myBlackList.append("QCD")
 
         Print("Adding all datasets from multiCRAB directory %s" % (opts.mcrab))
         Print("If collision data are present, then vertex reweighting is done according to the chosen data era (era=2015C, 2015D, 2015) etc...")
@@ -202,7 +202,8 @@ def main():
                               usePUreweighting       = opts.usePUreweighting,
                               useTopPtReweighting    = opts.useTopPtReweighting,
                               doSystematicVariations = opts.doSystematics,
-                              analysisType="HToTB")
+                              analysisType="HToTB",
+                              verbose=opts.verbose)
 
     # Add variations (e.g. for optimisation)
     # builder.addVariation("METSelection.METCutValue", [100,120,140])
@@ -238,7 +239,7 @@ def main():
         Print("Running process with PROOF (proofWorkes=%s)" % ( str(opts.jCores) ) )
         process.run(proof=True, proofWorkers=opts.jCores)
     else:
-        Print("Running process")
+        Verbose("Running process")
         process.run()
 
     # Print total time elapsed
@@ -253,8 +254,8 @@ def main():
 
 #================================================================================================
 def PrintOptions(opts):
-    '''
-    '''
+    if not opts.verbose:
+        return
     table    = []
     msgAlign = "{:<20} {:<10} {:<10}"
     title    =  msgAlign.format("Option", "Value", "Default")
@@ -304,7 +305,7 @@ if __name__ == "__main__":
     NEVTS         = -1
     HISTOLEVEL    = "Debug" #"Informative" #"Debug"
     PUREWEIGHT    = True
-    TOPPTREWEIGHT = False
+    TOPPTREWEIGHT = True
     DOSYSTEMATICS = False
 
     parser = OptionParser(usage="Usage: %prog [options]" , add_help_option=False,conflict_handler="resolve")
@@ -332,8 +333,8 @@ if __name__ == "__main__":
     parser.add_option("--noPU", dest="usePUreweighting", action="store_false", default = PUREWEIGHT, 
                       help="Do NOT apply Pileup re-weighting (default: %s)" % (PUREWEIGHT) )
 
-    parser.add_option("--noTopPt", dest="useTopPtReweighting", action="store_false", default = TOPPTREWEIGHT, 
-                      help="Do NOT apply top-pt re-weighting (default: %s)" % (TOPPTREWEIGHT) )
+    parser.add_option("--topPt", dest="useTopPtReweighting", action="store_true", default = TOPPTREWEIGHT, 
+                      help="Do apply top-pt re-weighting (default: %s)" % (TOPPTREWEIGHT) )
 
     parser.add_option("--doSystematics", dest="doSystematics", action="store_true", default = DOSYSTEMATICS, 
                       help="Do systematics variations  (default: %s)" % (DOSYSTEMATICS) )
