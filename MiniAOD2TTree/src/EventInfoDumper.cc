@@ -7,7 +7,8 @@
 EventInfoDumper::EventInfoDumper(edm::ConsumesCollector&& iConsumesCollector, const edm::ParameterSet& pset)
 : puSummaryToken(iConsumesCollector.consumes<std::vector<PileupSummaryInfo>>(pset.getParameter<edm::InputTag>("PileupSummaryInfoSrc"))),
   lheToken(iConsumesCollector.consumes<LHEEventProduct>(pset.getUntrackedParameter<edm::InputTag>("LHESrc", edm::InputTag("")))),
-  vertexToken(iConsumesCollector.consumes<edm::View<reco::Vertex>>(pset.getParameter<edm::InputTag>("OfflinePrimaryVertexSrc")))
+  vertexToken(iConsumesCollector.consumes<edm::View<reco::Vertex>>(pset.getParameter<edm::InputTag>("OfflinePrimaryVertexSrc"))),
+  lherunToken(iConsumesCollector.consumes<LHERunInfoProduct>(pset.getUntrackedParameter<edm::InputTag>("LHESrc", edm::InputTag(""))))
 //  topPtToken(iConsumesCollector.consumes<double>(pset.getParameter<edm::InputTag>("TopPtProducer")))
 {
     bookTopPt = false;
@@ -39,6 +40,8 @@ void EventInfoDumper::book(TTree* tree){
     tree->Branch("pvPtSumRatioToNext",&ptSumRatio);
     if(bookTopPt)
     tree->Branch("topPtWeight", &topPtWeight);
+    tree->Branch("lheCentralWeight", &lheCentralWeight);
+    tree->Branch("lheWeights", &lheWeights);
 
     return;
 }
@@ -74,11 +77,32 @@ bool EventInfoDumper::fill(edm::Event& iEvent, const edm::EventSetup& iSetup){
     // number of jets for combining W+Jets/Z+jets inclusive with exclusive
     edm::Handle<LHEEventProduct> lheHandle;
     iEvent.getByToken(lheToken, lheHandle);
+    
     if (lheHandle.isValid()) {
-        // Store NUP = number of partons
-        NUP = lheHandle->hepeup().NUP;
+      // Store NUP = number of partons
+      NUP = lheHandle->hepeup().NUP;
+      
+      lheCentralWeight = lheHandle->originalXWGTUP();
+      
+      int icount = 0;
+      //std::cout<<"================"<<std::endl;
+      for (auto i : lheHandle->weights()){
+	icount++;
+	if (icount > 110) continue;
+	//std::cout<<"counter="<<icount<<" out of "<<lheHandle->weights().size()<<"     i="<<i.wgt/lheHandle->originalXWGTUP()<<"    ID="<<i.id<<std::endl;
+	lheWeights.push_back(i.wgt);
+      }
     }
-
+    
+    /*
+    std::cout<<"****************CHECK**********************"<<std::endl;
+    std::cout<<"LHE Central Value ="<<lheHandle->originalXWGTUP()<<std::endl;
+    std::cout<<"Size of LHE Weights="<<lheWeights.size()<<std::endl;
+    for (unsigned int k=0; k<lheWeights.size(); k++){
+      std::cout<<"k="<<k<<"  LHE Weight is ="<<lheWeights.at(k)<<std::endl;
+    }
+    */
+    
     // PV
     nGoodOfflinePV = -1;
     pvX = 0;
@@ -133,5 +157,6 @@ bool EventInfoDumper::filter(){
 }
 
 void EventInfoDumper::reset(){
+  lheWeights.clear();
   return;
 }

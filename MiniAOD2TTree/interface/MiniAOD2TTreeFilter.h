@@ -6,6 +6,8 @@
         
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/Run.h"
+#include "SimDataFormats/GeneratorProducts/interface/LHERunInfoProduct.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"  
 #include "DataFormats/Common/interface/View.h"
         
@@ -46,6 +48,7 @@ class MiniAOD2TTreeFilter : public edm::EDFilter {
         ~MiniAOD2TTreeFilter();
 
         void beginRun(edm::Run const&, edm::EventSetup const&);
+	void endRun(edm::Run const&, edm::EventSetup const&);
         void beginJob();
         bool filter(edm::Event&, const edm::EventSetup&);
         void endJob();
@@ -60,6 +63,7 @@ class MiniAOD2TTreeFilter : public edm::EDFilter {
         HLTConfigProvider hltConfig;
         //PrescaleWeightProvider prescaleWeight;
 
+	edm::EDGetTokenT<LHERunInfoProduct> lheRunToken;
 	std::string outputFileName;
         std::string PUInfoInputFileName;
         std::string PUInfoPSInputFileName;

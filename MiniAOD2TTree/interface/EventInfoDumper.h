@@ -7,10 +7,12 @@
 #include "FWCore/Framework/interface/ConsumesCollector.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/Run.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/Common/interface/View.h"
 #include "DataFormats/Common/interface/Ptr.h"
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/LHERunInfoProduct.h"
 #include "DataFormats/Scalers/interface/LumiScalers.h"
 
 #include <string>
@@ -41,6 +43,7 @@ class EventInfoDumper {
         edm::EDGetTokenT<LHEEventProduct> lheToken;
         edm::EDGetTokenT<edm::View<reco::Vertex> > vertexToken;
         edm::EDGetTokenT<double> topPtToken;
+	edm::EDGetTokenT<LHERunInfoProduct> lherunToken;
 	
 	unsigned long long event;
 	unsigned int run,lumi;
@@ -56,7 +59,9 @@ class EventInfoDumper {
         float distanceToClosestPV;
         float ptSumRatio; // Ratio of track pt sum of first and second vertex
         float topPtWeight; // Weight produced by TopPtProducer
-
+	double lheCentralWeight;
+	std::vector<double> lheWeights;
+	  
 	bool bookLumiScalers;
 	bool bookTopPt;
 

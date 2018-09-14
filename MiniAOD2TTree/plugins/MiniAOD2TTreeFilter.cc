@@ -6,16 +6,18 @@
 #include <regex>
 
 MiniAOD2TTreeFilter::MiniAOD2TTreeFilter(const edm::ParameterSet& iConfig) :
-    //prescaleWeight(iConfig.getParameter<edm::ParameterSet>("PrescaleProvider"), consumesCollector(), this),
-    outputFileName(iConfig.getParameter<std::string>("OutputFileName")),
-    PUInfoInputFileName(iConfig.getParameter<std::string>("PUInfoInputFileName")),
-//    TopPtInputFileName(iConfig.getParameter<std::string>("TopPtInputFileName")),
-    codeVersion(iConfig.getParameter<std::string>("CodeVersion")),
-    dataVersion(iConfig.getParameter<std::string>("DataVersion")),
-    cmEnergy(iConfig.getParameter<int>("CMEnergy")),
-    eventInfoCollections(iConfig.getParameter<edm::ParameterSet>("EventInfo"))
+  
+  //prescaleWeight(iConfig.getParameter<edm::ParameterSet>("PrescaleProvider"), consumesCollector(), this),
+  outputFileName(iConfig.getParameter<std::string>("OutputFileName")),
+  PUInfoInputFileName(iConfig.getParameter<std::string>("PUInfoInputFileName")),
+  //    TopPtInputFileName(iConfig.getParameter<std::string>("TopPtInputFileName")),
+  codeVersion(iConfig.getParameter<std::string>("CodeVersion")),
+  dataVersion(iConfig.getParameter<std::string>("DataVersion")),
+  cmEnergy(iConfig.getParameter<int>("CMEnergy")),
+  eventInfoCollections(iConfig.getParameter<edm::ParameterSet>("EventInfo"))
 {
-
+  lheRunToken= consumes<LHERunInfoProduct, edm::InRun>(edm::InputTag("externalLHEProducer"));
+  
   PUInfoPSInputFileName = "";  
   if (iConfig.exists("PUInfoPSInputFileName")) {
     PUInfoPSInputFileName = iConfig.getParameter<std::string>("PUInfoPSInputFileName");
@@ -186,8 +188,27 @@ MiniAOD2TTreeFilter::~MiniAOD2TTreeFilter() {
 void MiniAOD2TTreeFilter::beginRun(edm::Run const & iRun, edm::EventSetup const& iSetup) {
     bool changed = true;
     hltConfig.init(iRun,iSetup,hltProcessName,changed);
-    if(trgDumper != 0) trgDumper->book(iRun,hltConfig);
+    if(trgDumper != 0) trgDumper->book(iRun,hltConfig);    
 }
+
+void MiniAOD2TTreeFilter::endRun(edm::Run const & iRun, edm::EventSetup const& iSetup) {
+  
+  edm::Handle<LHERunInfoProduct> run;                                                                                                                                                                             
+  typedef std::vector<LHERunInfoProduct::Header>::const_iterator headers_const_iterator;                                                                                                                          
+  
+  iRun.getByToken( lheRunToken, run );                                                                                                                                                                  
+  LHERunInfoProduct myLHERunInfoProduct = *(run.product());                                                                                                                                                       
+  /*
+  for (headers_const_iterator iter=myLHERunInfoProduct.headers_begin(); iter!=myLHERunInfoProduct.headers_end(); iter++){                                                                                         
+    std::cout << iter->tag() << std::endl;                                                                                                                                                                        
+    std::vector<std::string> lines = iter->lines();                                                                                                                                                               
+    for (unsigned int iLine = 0; iLine<lines.size(); iLine++) {                                                                                                                                                   
+      std::cout << lines.at(iLine);                                                                                                                                                                               
+    }                                                                                                                                                                                                             
+  }
+  */
+}
+
 
 void MiniAOD2TTreeFilter::beginJob(){
 }   
@@ -226,21 +247,22 @@ bool MiniAOD2TTreeFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSet
 }
 
 void MiniAOD2TTreeFilter::reset(){
-    if (skimDumper) skimDumper->reset();
-    if (trgDumper) trgDumper->reset();
-    if (metNoiseFilterDumper) metNoiseFilterDumper->reset();
-    if (tauDumper) tauDumper->reset();
-    if (electronDumper) electronDumper->reset();
-    if (muonDumper) muonDumper->reset();
-    if (jetDumper) jetDumper->reset();
-    if (fatJetDumper) fatJetDumper->reset();
-    if (topDumper) topDumper->reset();
-    if (metDumper) metDumper->reset();
-    if (genMetDumper) genMetDumper->reset();
-    if (genWeightDumper) genWeightDumper->reset();
-    if (trackDumper) trackDumper->reset();
-    if (genParticleDumper) genParticleDumper->reset();
-    if (genJetDumper) genJetDumper->reset();
+  if (eventInfo) eventInfo->reset(); 
+  if (skimDumper) skimDumper->reset();
+  if (trgDumper) trgDumper->reset();
+  if (metNoiseFilterDumper) metNoiseFilterDumper->reset();
+  if (tauDumper) tauDumper->reset();
+  if (electronDumper) electronDumper->reset();
+  if (muonDumper) muonDumper->reset();
+  if (jetDumper) jetDumper->reset();
+  if (fatJetDumper) fatJetDumper->reset();
+  if (topDumper) topDumper->reset();
+  if (metDumper) metDumper->reset();
+  if (genMetDumper) genMetDumper->reset();
+  if (genWeightDumper) genWeightDumper->reset();
+  if (trackDumper) trackDumper->reset();
+  if (genParticleDumper) genParticleDumper->reset();
+  if (genJetDumper) genJetDumper->reset();
 }
 
 #include <time.h>
