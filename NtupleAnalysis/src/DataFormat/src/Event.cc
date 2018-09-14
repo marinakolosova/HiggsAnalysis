@@ -14,99 +14,101 @@ Event::Event(const ParameterSet& config):
   fL1extraMET("L1MET_l1extra"),
   fGenWeight("GenWeight"),
   fTopPtWeight("topPtWeight"),
+  flheCentralWeight("lheCentralWeight"),
+  flheWeights(nullptr),
   fIsMC(config.isMC())
-{
-  // Trigger
-  boost::optional<float> fL1ETM = config.getParameterOptional<float>("Trigger.L1ETM");
-  fL1ETMThreshold = 0;
-  if(fL1ETM) fL1ETMThreshold = static_cast<float>(*fL1ETM);
-  boost::optional<std::vector<std::string>> triggerOR = config.getParameterOptional<std::vector<std::string>>("Trigger.triggerOR", std::vector<std::string>{});
-  if(triggerOR) {
-    if (triggerOR->size())
-      fTriggerOr.setBranchNames(*triggerOR);
-  }
-  boost::optional<std::vector<std::string>> triggerOR2 = config.getParameterOptional<std::vector<std::string>>("Trigger.triggerOR2", std::vector<std::string>{});
-  if(triggerOR2) {
-    if (triggerOR2->size())
-      fTriggerOr2.setBranchNames(*triggerOR2);
-  }
- 
-  bool variationAssigned = false;
-  // Systematics
-  boost::optional<std::string> jetSyst = config.getParameterOptional<std::string>("JetSelection.systematicVariation");
-  if(jetSyst) {
-    fJetCollection.setEnergySystematicsVariation(*jetSyst);
-    fMET_Type1.setEnergySystematicsVariation(*jetSyst);
-    variationAssigned = true;
-  }
+ {
+   // Trigger
+   boost::optional<float> fL1ETM = config.getParameterOptional<float>("Trigger.L1ETM");
+   fL1ETMThreshold = 0;
+   if(fL1ETM) fL1ETMThreshold = static_cast<float>(*fL1ETM);
+   boost::optional<std::vector<std::string>> triggerOR = config.getParameterOptional<std::vector<std::string>>("Trigger.triggerOR", std::vector<std::string>{});
+   if(triggerOR) {
+     if (triggerOR->size())
+       fTriggerOr.setBranchNames(*triggerOR);
+   }
+   boost::optional<std::vector<std::string>> triggerOR2 = config.getParameterOptional<std::vector<std::string>>("Trigger.triggerOR2", std::vector<std::string>{});
+   if(triggerOR2) {
+     if (triggerOR2->size())
+       fTriggerOr2.setBranchNames(*triggerOR2);
+   }
 
-  boost::optional<std::string> tauSyst = config.getParameterOptional<std::string>("TauSelection.systematicVariation");
-  if(tauSyst) {
-    if(variationAssigned) {
-      throw std::runtime_error("Trying to set systematicVariation for taus, but a variation has already been set for jets! Only one variation per analyzer is allowed");
-    }
-    fTauCollection.setEnergySystematicsVariation(*tauSyst);
-    fMET_Type1.setEnergySystematicsVariation(*tauSyst);
-    variationAssigned = true;
-  }
+   bool variationAssigned = false;
+   // Systematics
+   boost::optional<std::string> jetSyst = config.getParameterOptional<std::string>("JetSelection.systematicVariation");
+   if(jetSyst) {
+     fJetCollection.setEnergySystematicsVariation(*jetSyst);
+     fMET_Type1.setEnergySystematicsVariation(*jetSyst);
+     variationAssigned = true;
+   }
 
-  // MET filter discriminators
-  boost::optional<std::vector<std::string> > metFilterDiscr = config.getParameterOptional<std::vector<std::string> >("METFilter.discriminators", std::vector<std::string>{});
-  if (metFilterDiscr) {
-    fMETFilter.setConfigurableDiscriminators(*metFilterDiscr);
-  }
-  
-  // Tau discriminators
-  boost::optional<std::vector<std::string> > tauDiscr = config.getParameterOptional<std::vector<std::string> >("TauSelection.discriminators", std::vector<std::string>{});
-  if(tauDiscr) {
-    fTauCollection.setConfigurableDiscriminators(*tauDiscr);
-  }
-  boost::optional<std::string> tauAgainstElectronDiscr = config.getParameterOptional<std::string>("TauSelection.againstElectronDiscr");
-  if (tauAgainstElectronDiscr)
-    fTauCollection.setAgainstElectronDiscriminator(*tauAgainstElectronDiscr);
-  boost::optional<std::string> tauAgainstMuonDiscr = config.getParameterOptional<std::string>("TauSelection.againstMuonDiscr");
-  if (tauAgainstMuonDiscr)
-    fTauCollection.setAgainstMuonDiscriminator(*tauAgainstMuonDiscr);
-  boost::optional<std::string> tauIsolationDiscr = config.getParameterOptional<std::string>("TauSelection.isolationDiscr");
-  if (tauIsolationDiscr)
-    fTauCollection.setIsolationDiscriminator(*tauIsolationDiscr);
-  
-  // Muon discriminators
-  boost::optional<std::string> muIDDiscr = config.getParameterOptional<std::string>("MuonSelection.muonID");
-  if (muIDDiscr)
-    fMuonCollection.setMuonIDDiscriminator(*muIDDiscr);
-  
-  // Electron discriminators
-  boost::optional<std::string> eIDDiscr = config.getParameterOptional<std::string>("ElectronSelection.electronID");
-  if (eIDDiscr)
-    fElectronCollection.setElectronIDDiscriminator(*eIDDiscr);
-  
-  // Jet discriminators
-  boost::optional<std::string> jetIDDiscr = config.getParameterOptional<std::string>("JetSelection.jetIDDiscr");
-  if (jetIDDiscr)
-    fJetCollection.setJetIDDiscriminator(*jetIDDiscr);
-  boost::optional<std::string> jetPUIDDiscr = config.getParameterOptional<std::string>("JetSelection.jetPUIDDiscr");
-  if (jetPUIDDiscr)
-    fJetCollection.setJetPUIDDiscriminator(*jetPUIDDiscr);
+   boost::optional<std::string> tauSyst = config.getParameterOptional<std::string>("TauSelection.systematicVariation");
+   if(tauSyst) {
+     if(variationAssigned) {
+       throw std::runtime_error("Trying to set systematicVariation for taus, but a variation has already been set for jets! Only one variation per analyzer is allowed");
+     }
+     fTauCollection.setEnergySystematicsVariation(*tauSyst);
+     fMET_Type1.setEnergySystematicsVariation(*tauSyst);
+     variationAssigned = true;
+   }
 
-  // B jet discriminators
-  boost::optional<std::string> bjetDiscr = config.getParameterOptional<std::string>("BJetSelection.bjetDiscr");
-  if (bjetDiscr)
-    fJetCollection.setBJetDiscriminator(*bjetDiscr);
-  
-}
+   // MET filter discriminators
+   boost::optional<std::vector<std::string> > metFilterDiscr = config.getParameterOptional<std::vector<std::string> >("METFilter.discriminators", std::vector<std::string>{});
+   if (metFilterDiscr) {
+     fMETFilter.setConfigurableDiscriminators(*metFilterDiscr);
+   }
 
-Event::~Event() {}
+   // Tau discriminators
+   boost::optional<std::vector<std::string> > tauDiscr = config.getParameterOptional<std::vector<std::string> >("TauSelection.discriminators", std::vector<std::string>{});
+   if(tauDiscr) {
+     fTauCollection.setConfigurableDiscriminators(*tauDiscr);
+   }
+   boost::optional<std::string> tauAgainstElectronDiscr = config.getParameterOptional<std::string>("TauSelection.againstElectronDiscr");
+   if (tauAgainstElectronDiscr)
+     fTauCollection.setAgainstElectronDiscriminator(*tauAgainstElectronDiscr);
+   boost::optional<std::string> tauAgainstMuonDiscr = config.getParameterOptional<std::string>("TauSelection.againstMuonDiscr");
+   if (tauAgainstMuonDiscr)
+     fTauCollection.setAgainstMuonDiscriminator(*tauAgainstMuonDiscr);
+   boost::optional<std::string> tauIsolationDiscr = config.getParameterOptional<std::string>("TauSelection.isolationDiscr");
+   if (tauIsolationDiscr)
+     fTauCollection.setIsolationDiscriminator(*tauIsolationDiscr);
+
+   // Muon discriminators
+   boost::optional<std::string> muIDDiscr = config.getParameterOptional<std::string>("MuonSelection.muonID");
+   if (muIDDiscr)
+     fMuonCollection.setMuonIDDiscriminator(*muIDDiscr);
+
+   // Electron discriminators
+   boost::optional<std::string> eIDDiscr = config.getParameterOptional<std::string>("ElectronSelection.electronID");
+   if (eIDDiscr)
+     fElectronCollection.setElectronIDDiscriminator(*eIDDiscr);
+
+   // Jet discriminators
+   boost::optional<std::string> jetIDDiscr = config.getParameterOptional<std::string>("JetSelection.jetIDDiscr");
+   if (jetIDDiscr)
+     fJetCollection.setJetIDDiscriminator(*jetIDDiscr);
+   boost::optional<std::string> jetPUIDDiscr = config.getParameterOptional<std::string>("JetSelection.jetPUIDDiscr");
+   if (jetPUIDDiscr)
+     fJetCollection.setJetPUIDDiscriminator(*jetPUIDDiscr);
+
+   // B jet discriminators
+   boost::optional<std::string> bjetDiscr = config.getParameterOptional<std::string>("BJetSelection.bjetDiscr");
+   if (bjetDiscr)
+     fJetCollection.setBJetDiscriminator(*bjetDiscr);
+
+ }
+
+ Event::~Event() {}
 
 void Event::setupBranches(BranchManager& mgr) {
   fEventID.setupBranches(mgr);
-
+  
   fVertexInfo.setupBranches(mgr);
   fMETFilter.setupBranches(mgr);
-
+  
   fTriggerOr.setupBranchesAutoScanVersion(mgr);
   fTriggerOr2.setupBranchesAutoScanVersion(mgr);
-
+  
   fL1TauCollection.setupBranches(mgr);
   fL1IsoTauCollection.setupBranches(mgr);
   fL1JetCollection.setupBranches(mgr);
@@ -121,6 +123,7 @@ void Event::setupBranches(BranchManager& mgr) {
   fGenMET.setupBranches(mgr);
   fGenWeight.setupBranches(mgr);
   fTopPtWeight.setupBranches(mgr);
+  flheCentralWeight.setupBranches(mgr);
   fMET_Type1.setupBranches(mgr);
   fMET.setupBranches(mgr);
   fCaloMET.setupBranches(mgr);
@@ -128,4 +131,6 @@ void Event::setupBranches(BranchManager& mgr) {
   fL1extraMET.setupBranches(mgr);
   fPFCandidates.setupBranches(mgr);
   fAK8JetCollection.setupBranches(mgr);
+
+  mgr.book("lheWeights", &flheWeights);
 }

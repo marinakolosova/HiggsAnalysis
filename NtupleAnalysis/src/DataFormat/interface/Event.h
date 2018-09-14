@@ -95,13 +95,15 @@ public:
 
   const GenWeight& genWeight() const { return fGenWeight; }
   const GenWeight_T<float>& topPtWeight() const { return fTopPtWeight; }
-
+  const GenWeight& lheCentralWeight() const { return flheCentralWeight; }
+  const std::vector<double>& getLHEweights() const {return flheWeights->value(); }
+  
 private:
   EventID fEventID;
-
+  
   VertexInfo fVertexInfo;
   METFilter fMETFilter;
-
+  
   BooleanOr fTriggerOr;
   BooleanOr fTriggerOr2;
 
@@ -125,10 +127,12 @@ private:
   MET fCaloMET;
   MET fL1MET;
   MET fL1extraMET;
-
+  
   GenWeight fGenWeight;
   GenWeight_T<float> fTopPtWeight;
-
+  GenWeight flheCentralWeight;
+  const Branch<std::vector<double> > *flheWeights;
+  
   float fL1ETMThreshold;
   const bool fIsMC;
 };

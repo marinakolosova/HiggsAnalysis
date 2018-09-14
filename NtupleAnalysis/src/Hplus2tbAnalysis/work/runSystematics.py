@@ -32,6 +32,17 @@ The available ROOT options for the Error-Ignore-Level are (const Int_t):
 LAST USED:
 ./runSystematics.py -m /uscms_data/d3/aattikis/workspace/multicrab/multicrab_Hplus2tbAnalysis_v8030_20180508T0644 --systVars JES,JER
 
+TO RUN THE QCD & PDF Scales:
+A) Run to get the sum of cenrtral weights & sum of each weight variation
+
+NOMINAL:    ./runSystematics.py -m /uscms_data/d3/mkolosov/workspace/multicrab/multicrab_Hplus2tbAnalysis_v8030_20180830T0822 --weight -1
+VARIATION:  ./runSystematics.py -m /uscms_data/d3/mkolosov/workspace/multicrab/multicrab_Hplus2tbAnalysis_v8030_20180830T0822 --weight  4
+
+B) Once you have the sums, run to get the correct weight variation. NOTE: Every sample and every weight you run must have different Central and Scale sums.
+
+./runSystematics.py -m /uscms_data/d3/mkolosov/workspace/multicrab/multicrab_Hplus2tbAnalysis_v8030_20180830T0822 -i "TT" --weight 4 --central 6429775 --scale 5500744.5
+./runSystematics.py -m /uscms_data/d3/mkolosov/workspace/multicrab/multicrab_Hplus2tbAnalysis_v8030_20180830T0822 -i "180" --weight 4 --central 113891.335938 --scale 104015.773438
+
 
 HistoLevel:
 For the histogramAmbientLevel each DEEPER level is a SUBSET of the rest. 
@@ -123,6 +134,9 @@ def main():
         #maxEvents[d] = 100 #for testing
         #if  d == "ChargedHiggs_HplusTB_HplusToTB_M_650":
         #    maxEvents[d] = 4000000
+
+    #postfix = "Weight_"+str(opts.weight)
+    postfix = str(opts.includeOnlyTasks)+"_Weight_"+str(opts.weight)
     process = Process(prefix, postfix, maxEvents)
                 
     # ================================================================================================
@@ -213,6 +227,15 @@ def main():
     # allSelections.BJetSelection.numberOfBJetsCutValue = 0
     # allSelections.BJetSelection.numberOfBJetsCutDirection = "=="
 
+    allSelections.weightpos  = opts.weight
+    allSelections.sumCentral = opts.central
+    allSelections.sumScale   = opts.scale
+    
+    print "******************************************************************"
+    print "Weight = ", allSelections.weightpos
+    print "Sum of central weights = ", allSelections.sumCentral
+    print "Sum of scale weights   = ", allSelections.sumScale
+    print "******************************************************************"
     
     # ================================================================================================
     # Add Analysis Variations
@@ -537,7 +560,11 @@ if __name__ == "__main__":
     DOSYSTEMATICS = False
     GROUP         = "A"
     SYSTVARS      = None
-
+    WEIGHT        = -1
+    CENTRAL       = -1
+    SCALE         = -1
+    
+    
     parser = OptionParser(usage="Usage: %prog [options]" , add_help_option=False,conflict_handler="resolve")
     parser.add_option("-m", "--mcrab", dest="mcrab", action="store", 
                       help="Path to the multicrab directory for input")
@@ -572,6 +599,12 @@ if __name__ == "__main__":
     parser.add_option("--systVars", dest="systVars", default = SYSTVARS, 
                         help="List of comma-separated (NO SPACE!) systematic variations to  perform. Overwrites the default list of systematics (default: %s)" % SYSTVARS)
 
+    parser.add_option("--weight", dest="weight", default=WEIGHT,
+                      help="Apply weight (PDF or scale (defaul: %s)" % WEIGHT)
+
+    parser.add_option("--central", dest="central", help="Sum of the central weights", default=CENTRAL)
+    parser.add_option("--scale", dest="scale", help="Sum of scale weights", default=SCALE)
+    
     parser.add_option("--group", dest="group", default = GROUP, 
                       help="The group of datasets to run on. Capital letter from \"A\" to \"I\"  (default: %s)" % (GROUP) )
 

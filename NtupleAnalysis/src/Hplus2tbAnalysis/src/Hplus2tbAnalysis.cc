@@ -18,7 +18,10 @@ public:
   virtual void setupBranches(BranchManager& branchManager) override;
   /// Called for each event
   virtual void process(Long64_t entry) override;
-
+  
+  double sumCentralWeight = 0.0;
+  double sumScaleWeight   = 0.0;
+  
 private:
   // Common plots
   CommonPlots fCommonPlots;
@@ -40,7 +43,12 @@ private:
   TopSelectionBDT fTopSelection;
   // FatJetSelection fFatJetSelection;
   Count cSelected;
-    
+  int fWeight;
+  Double_t fSumCentral;
+  Double_t fSumScale;
+  
+  WrappedTH1 *hCounter_WeightSums;
+  
   // Non-common histograms
   // WrappedTH1 *hAssociatedTop_Pt;
   // WrappedTH1 *hAssociatedTop_Eta;
@@ -67,7 +75,10 @@ Hplus2tbAnalysis::Hplus2tbAnalysis(const ParameterSet& config, const TH1* skimCo
     cTopTaggingSFCounter(fEventCounter.addCounter("top-tag SF")),
     fTopSelection(config.getParameter<ParameterSet>("TopSelectionBDT"), fEventCounter, fHistoWrapper, &fCommonPlots, ""),
     // fFatJetSelection(config.getParameter<ParameterSet>("FatJetSelection"), fEventCounter, fHistoWrapper, &fCommonPlots, "Veto"),
-    cSelected(fEventCounter.addCounter("Selected Events"))
+    cSelected(fEventCounter.addCounter("Selected Events")),
+    fWeight(config.getParameter<int>("weightpos")),
+    fSumCentral(config.getParameter<double>("sumCentral")),
+    fSumScale(config.getParameter<double>("sumScale"))
 { }
 
 
@@ -89,6 +100,8 @@ void Hplus2tbAnalysis::book(TDirectory *dir) {
   // fFatJetSelection.bookHistograms(dir);
 
   // Book non-common histograms
+  hCounter_WeightSums = fHistoWrapper.makeTH<TH1F>(HistoLevel::kInformative, dir, "hCounter_WeightSums", "hCounter_WeightSums", 2, 0, 2);
+
   // hAssociatedTop_Pt  = fHistoWrapper.makeTH<TH1F>(HistoLevel::kInformative, dir, "associatedTop_Pt", "Associated t pT;p_{T} (GeV/c)", nBinsPt, minPt, maxPt);
   // hAssociatedTop_Eta = fHistoWrapper.makeTH<TH1F>(HistoLevel::kInformative, dir, "associatedTop_Eta", "Associated t eta;#eta", nBinsEta, minEta, maxEta);
   return;
@@ -102,12 +115,47 @@ void Hplus2tbAnalysis::setupBranches(BranchManager& branchManager) {
 
 
 void Hplus2tbAnalysis::process(Long64_t entry) {
-
+  
+  sumCentralWeight = sumCentralWeight + fEvent.lheCentralWeight().weight();
+  if (fWeight == -1){
+    sumScaleWeight   = sumScaleWeight + fEvent.genWeight().weight();
+  }
+  else
+    {
+      sumScaleWeight   = sumScaleWeight   + fEvent.getLHEweights().at(fWeight);
+    }
+  
+  hCounter_WeightSums->SetBinContent(1, sumCentralWeight);
+  hCounter_WeightSums->SetBinContent(2, sumScaleWeight);
+  
+  /*
+  std::cout<<"========================="<<std::endl;
+  std::cout<<"Gen Weight is     ="<<fEvent.genWeight().weight()<<std::endl;
+  std::cout<<"Central Weight is ="<<fEvent.lheCentralWeight().weight()<<std::endl;
+  std::cout<<"All Weights size ="<<fEvent.getLHEweights().size()<<std::endl;
+  for (unsigned int i=0; i<fEvent.getLHEweights().size(); i++){
+    std::cout<<"Weight "<<i<<" = "<<fEvent.getLHEweights().at(i)<<std::endl;
+  }
+  */
+  
+  if (fEvent.isMC()) {
+    
+    if (fWeight == -1){
+      fEventWeight.multiplyWeight(fEvent.genWeight().weight());
+    }
+    else{
+      float weight = float(fEvent.getLHEweights().at(fWeight)) * fSumCentral / fSumScale;
+      fEventWeight.multiplyWeight(weight);
+      //std::cout<<"Weight in position "<<fWeight<<" = "<<weight<<"    Sum Central = "<<fSumCentral<< "     Sum Scale="<<fSumScale<<std::endl;
+    }
+  } // Event is MC
+  
+  
   //====== Initialize
   fCommonPlots.initialize();
   fCommonPlots.setFactorisationBinForEvent(std::vector<float> {});
   cAllEvents.increment();
-
+    
   //================================================================================================   
   // 1) Apply trigger 
   //================================================================================================   
@@ -225,7 +273,8 @@ void Hplus2tbAnalysis::process(Long64_t entry) {
   //================================================================================================
   if (0) std::cout << "=== All Selections" << std::endl;
   cSelected.increment();
-
+  
+  
   // Fill histos after AllSelections: (After top-selections and top-tag SF)
   fCommonPlots.fillControlPlotsAfterAllSelections(fEvent, isGenuineB);
   fEventSaver.save();
