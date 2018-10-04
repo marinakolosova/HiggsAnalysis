@@ -102,7 +102,12 @@ void JetDumper::book(TTree* tree){
     
     std::vector<std::string> discriminatorNames = inputCollections[i].getParameter<std::vector<std::string> >("discriminators");
     for(size_t iDiscr = 0; iDiscr < discriminatorNames.size(); ++iDiscr) {
-      tree->Branch((name+"_"+discriminatorNames[iDiscr]).c_str(),&discriminators[inputCollections.size()*iDiscr+i]);
+      std::string branch_name = discriminatorNames[iDiscr];
+      size_t pos_semicolon = branch_name.find(":");
+      if (pos_semicolon!=std::string::npos){
+	branch_name = branch_name.erase(pos_semicolon,1);
+      }
+      tree->Branch((name+"_"+branch_name).c_str(),&discriminators[inputCollections.size()*iDiscr+i]);
     }
     std::vector<std::string> userfloatNames = inputCollections[i].getParameter<std::vector<std::string> >("userFloats");
     for(size_t iDiscr = 0; iDiscr < userfloatNames.size(); ++iDiscr) {
