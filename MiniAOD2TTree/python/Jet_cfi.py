@@ -15,7 +15,8 @@ import FWCore.ParameterSet.Config as cms
 AK4Jets = cms.PSet(
     branchname = cms.untracked.string("Jets"),
 #        src = cms.InputTag("patJetsReapplyJECAK4CHS"), # made from ak4PFJetsCHS
-        src = cms.InputTag("selectedPatJetsAK4PFCHS"),#updatedPatJetsUpdatedJEC"),
+         src = cms.InputTag("selectedUpdatedPatJetsAK4PFCHS"), # Final pat jet collection with DeepCSV discriminators and JEC applied.
+#        src = cms.InputTag("selectedPatJetsAK4PFCHS"),#updatedPatJetsUpdatedJEC"),
 #        src = cms.InputTag("selectedPatJetsForMetT1T2SmearCorr"),
 #        src = cms.InputTag("cleanedPatJets"),
 #        src = cms.InputTag("patJetsReapplyJEC"),
@@ -46,7 +47,8 @@ AK4Jets = cms.PSet(
         "pfDeepCSVJetTags:probb",
         "pfDeepCSVJetTags:probc",
         "pfDeepCSVJetTags:probudsg",
-        "pfDeepCSVJetTags:probbb"
+        "pfDeepCSVJetTags:probbb",
+        "pfDeepCSVJetTags:probcc",
         ),
     userFloats = cms.vstring(
         "pileupJetId:fullDiscriminant",
