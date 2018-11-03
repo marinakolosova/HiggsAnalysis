@@ -7,6 +7,10 @@ skim = cms.EDFilter("Hplus2tbAnalysisSkim",
         "HLT_PFHT400_SixJet30_DoubleBTagCSV_p056_v",
         "HLT_PFHT450_SixJet40_BTagCSV_p056_v",
         "HLT_PFJet450_v", # For efficiency recovery in 2016H 
+        "HLT_PFHT900_v",
+        "HLT_AK8PFJet450_v",
+        "HLT_AK8PFJet360_TrimMass30_v",
+        "HLT_AK8PFHT700_TrimR0p1PT0p03Mass50_v"
     ),
     # Jets (https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID#Recommendations_for_13_TeV_data)
     JetCollection  = cms.InputTag("slimmedJets"),
