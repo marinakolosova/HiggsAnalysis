@@ -51,6 +51,7 @@ class SoftBTagDumper : public BaseDumper {
 	short nGoodOfflinePV;
 	short nGoodOfflineSV;
 	std::vector<double> *svPt;
+	std::vector<double> *svEnergy;
 	std::vector<double> *svEta;
 	std::vector<double> *svPhi;
 	std::vector<double> *svMass;
