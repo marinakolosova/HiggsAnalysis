@@ -125,7 +125,7 @@ def reproduceJEC(process):
 
 # ===== Set up electron ID (VID framework) =====
 from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
-def reproduceElectronID(process):
+def reproduceElectronID(process):  # fixme: Should we add also the V2 ID? see: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentificationRun2#Recipes_for_regular_users
     '''
     For instructions and more details see:
     https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentificationRun2
@@ -134,8 +134,10 @@ def reproduceElectronID(process):
     switchOnVIDElectronIdProducer(process, DataFormat.MiniAOD)
     # define which IDs we want to produce and add them to the VID producer
     for idmod in ['RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Spring16_GeneralPurpose_V1_cff',
+                  'RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Fall17_noIso_V1_cff',
+                  'RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Fall17_iso_V1_cff',
                   #'RecoEgamma.ElectronIdentification.Identification.mvaElectronID_PHYS14_PU20bx25_nonTrig_V1_cff', 
-                  ]:   # Marina
+                  ]:
         setupAllVIDIdsInModule(process, idmod, setupVIDElectronSelection)
     process.CustomisationsSequence += process.egmGsfElectronIDSequence
 
