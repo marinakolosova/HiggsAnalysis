@@ -101,7 +101,6 @@ bool SoftBTagDumper::fill(edm::Event& iEvent, const edm::EventSetup& iSetup){
     
     if(h_secondaryVertex.isValid())
       {
-	std::cout<<"SV size = "<<h_secondaryVertex->size()<<std::endl;
 	// For-loop: All Secondary Verticies
 	for(size_t isv = 0; isv < h_secondaryVertex->size(); isv++ )
 	  {
@@ -120,12 +119,8 @@ bool SoftBTagDumper::fill(edm::Event& iEvent, const edm::EventSetup& iSetup){
 	    svD3d[ic].push_back(vertexD3d(sv,PV).value());
 	    svD3dErr[ic].push_back(vertexD3d(sv,PV).error());
 	    costhetasvpv[ic].push_back(vertexDdotP(sv, PV));
-	    
-	    
 	  }//eof: loop on sec vertex
       }
-  
-   
   }//eof: loop on inputcollections
   return filter();
 }
