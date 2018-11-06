@@ -14,10 +14,11 @@ import FWCore.ParameterSet.Config as cms
 
 AK4Jets = cms.PSet(
     branchname = cms.untracked.string("Jets"),
+    src = cms.InputTag("selectedUpdatedPatJetsAK4PFCHS"),
 #        src = cms.InputTag("patJetsReapplyJECAK4CHS"), # made from ak4PFJetsCHS
 #        src = cms.InputTag("selectedPatJetsAK4PFCHS"),#updatedPatJetsUpdatedJEC"),
 #        src = cms.InputTag("updatedPatJetsUpdatedJEC"),
-        src = cms.InputTag("cleanedPatJetsModiedMET"),
+#        src = cms.InputTag("cleanedPatJetsModiedMET"),
 #        src = cms.InputTag("selectedPatJetsForMetT1T2SmearCorr"),
 #        src = cms.InputTag("cleanedPatJets"),
 #        src = cms.InputTag("patJetsReapplyJEC"),
@@ -43,23 +44,22 @@ AK4Jets = cms.PSet(
         "pfCombinedMVAV2BJetTags",
         "pfCombinedCvsLJetTags",
         "pfCombinedCvsBJetTags",
-        "tightpfCombinedSecondaryVertexV2BJetTags",
-        "tightpfCombinedInclusiveSecondaryVertexV2BJetTags",
-        "tightpfCombinedCvsLJetTags",
-        "tightpfCombinedCvsBJetTags"
+        #"tightpfCombinedSecondaryVertexV2BJetTags",
+        #"tightpfCombinedInclusiveSecondaryVertexV2BJetTags",
+        #"tightpfCombinedCvsLJetTags",
+        #"tightpfCombinedCvsBJetTags",
+        "pfDeepCSVJetTags:probbb",
+        "pfDeepCSVJetTags:probb",
+        "pfDeepCSVJetTags:probudsg",
+        "pfDeepCSVJetTags:probc",
         ),
     userFloats = cms.vstring(
         "pileupJetId:fullDiscriminant",
 	"QGTagger:qgLikelihood",
 	"caloJetMap:emEnergyFraction",
 	"caloJetMap:pt",
-####        "AK4PFCHSpileupJetIdEvaluator:fullDiscriminant",
-####        "QGTaggerAK4PFCHS:qgLikelihood",
-####        "QGTaggerAK4PFCHS:ptD",
-####        "QGTaggerAK4PFCHS:axis2",
         ),       
     userInts = cms.vstring(
-####        "QGTaggerAK4PFCHS:mult",
         ),
     )
 
