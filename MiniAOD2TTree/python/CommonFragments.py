@@ -28,25 +28,30 @@ def produceCustomisations(process, isData):
 def produceAK8Customisations(process, isData):
     process.AK8CustomisationsSequence = cms.Sequence()
     produceAK8JEC(process, isData)
+    print "\n"
     print "=== AK8 Customisations done"
-
+    print "\n"
+    
 def produceAK8JEC(process, isData):
-    from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
+    print "\n"
+    print "=== AK8 Customisations"
+    print "\n"
+    
+    process.load("Configuration.EventContent.EventContent_cff")
+    process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
+    process.load('Configuration.StandardSequences.MagneticField_38T_cff')
+    process.load('Configuration.StandardSequences.Services_cff')
     
     JEC = ['L1FastJet','L2Relative','L3Absolute']
     if isData:
         JEC += ['L2L3Residual']
         
-    updateJetCollection(
-        process,
-        labelName = 'AK8PFCHS',
-        jetSource = cms.InputTag("slimmedJetsAK8"),
-        rParam = 0.8,
-        jetCorrections = ('AK8PFchs', cms.vstring(JEC), 'None') 
-    )
-    
-    process.AK8CustomisationsSequence += process.patJetCorrFactorsAK8PFCHS
-    process.AK8CustomisationsSequence += process.updatedPatJetsAK8PFCHS
+    from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
+    jetToolbox( process, 'ak8', 'ak8JetSubs', 'out',
+                updateCollection="slimmedJetsAK8",
+                JETCorrPayload="AK8PFchs", JETCorrLevels = JEC,
+                postFix='',
+                )
     return
 
 def produceJets(process, isData):
@@ -63,6 +68,11 @@ def produceJets(process, isData):
     More info:
     https://twiki.cern.ch/twiki/bin/viewauth/CMS/QGDataBaseVersion
     '''
+    
+    print "\n"
+    print "=== AK4 Customisations"
+    print "\n"
+    
     process.load("Configuration.EventContent.EventContent_cff")
     process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
     process.load('Configuration.StandardSequences.MagneticField_38T_cff')
@@ -74,19 +84,18 @@ def produceJets(process, isData):
 
     from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
     jetToolbox( process, 'ak4', 'ak4JetSubs', 'out', 
-                updateCollection='cleanedPatJetsModiedMET', JETCorrPayload="AK4PFchs",
-                JETCorrLevels = JEC, #addPUJetID=True, #addQGTagger=True, 
+                updateCollection='cleanedPatJetsModiedMET', 
+                JETCorrLevels = JEC, JETCorrPayload="AK4PFchs",
                 bTagDiscriminators = ['pfCombinedInclusiveSecondaryVertexV2BJetTags', 'pfCombinedMVAV2BJetTags','pfCombinedCvsBJetTags','pfCombinedCvsLJetTags',
-                                      'pfDeepCSVJetTags:probb', 'pfDeepCSVJetTags:probc', 'pfDeepCSVJetTags:probudsg', 'pfDeepCSVJetTags:probbb'],#, 'pfDeepCSVJetTags:probcc'],
-
+                                      'pfDeepCSVJetTags:probb', 'pfDeepCSVJetTags:probc', 'pfDeepCSVJetTags:probudsg', 'pfDeepCSVJetTags:probbb'],
                 postFix='')
-
+    
     # Small fix required to add the variables ptD, axis2, mult. See:
     # https://hypernews.cern.ch/HyperNews/CMS/get/jet-algorithms/418/1.html
-#    getattr( process, 'updatedPatJetsAK4PFCHS').userData.userFloats.src += ['QGTagger'+'AK4PFCHS'+':ptD']
-#    getattr( process, 'updatedPatJetsAK4PFCHS').userData.userFloats.src += ['QGTagger'+'AK4PFCHS'+':axis2']
-#    getattr( process, 'updatedPatJetsAK4PFCHS').userData.userInts.src   += ['QGTagger'+'AK4PFCHS'+':mult']
-
+    #    getattr( process, 'updatedPatJetsAK4PFCHS').userData.userFloats.src += ['QGTagger'+'AK4PFCHS'+':ptD']
+    #    getattr( process, 'updatedPatJetsAK4PFCHS').userData.userFloats.src += ['QGTagger'+'AK4PFCHS'+':axis2']
+    #    getattr( process, 'updatedPatJetsAK4PFCHS').userData.userInts.src   += ['QGTagger'+'AK4PFCHS'+':mult']
+    
     return
 
 
@@ -223,7 +232,7 @@ def reproduceMET(process,isdata):
 #                               connect = cms.string("sqlite:PhysicsTools/PatUtils/data/JER/"+jerera+"_MC.db"),
                                connect = cms.string("sqlite:"+jerera+"_MC_JER.db"),
                                toGet =  cms.VPSet(
-        #######
+            
         ### read the PFchs  
 
         cms.PSet(
@@ -240,6 +249,23 @@ def reproduceMET(process,isdata):
           record = cms.string('JetResolutionScaleFactorRcd'),
           tag    = cms.string('JR_'+jerera+'_MC_SF_AK4PFchs'),
           label  = cms.untracked.string('AK4PFchs')
+          ),
+
+        ### read the PFPuppi
+        cms.PSet(
+          record = cms.string('JetResolutionRcd'),
+          tag    = cms.string('JR_'+jerera+'_MC_PtResolution_AK4PFPuppi'),
+          label  = cms.untracked.string('AK4PFPuppi_pt')
+          ),
+        cms.PSet(
+          record = cms.string("JetResolutionRcd"),
+          tag    = cms.string('JR_'+jerera+'_MC_PhiResolution_AK4PFPuppi'),
+          label  = cms.untracked.string("AK4PFPuppi_phi")
+          ),
+        cms.PSet( 
+          record = cms.string('JetResolutionScaleFactorRcd'),
+          tag    = cms.string('JR_'+jerera+'_MC_SF_AK4PFPuppi'),
+          label  = cms.untracked.string('AK4PFPuppi')
           ),
         
         ### read the AK8 JER
@@ -258,6 +284,24 @@ def reproduceMET(process,isdata):
           tag    = cms.string('JR_'+jerera+'_MC_SF_AK8PFchs'),
           label  = cms.untracked.string('AK8PFchs')
           ),
+        
+        ### read the AK8 PUPPI JER
+        cms.PSet(
+          record = cms.string('JetResolutionRcd'),
+          tag    = cms.string('JR_'+jerera+'_MC_PtResolution_AK8PFPuppi'),
+          label  = cms.untracked.string('AK8PFPuppi_pt')
+          ),
+        cms.PSet(
+          record = cms.string("JetResolutionRcd"),
+          tag    = cms.string('JR_'+jerera+'_MC_PhiResolution_AK8PFPuppi'),
+          label  = cms.untracked.string("AK8PFPuppi_phi")
+          ),
+        cms.PSet( 
+          record = cms.string('JetResolutionScaleFactorRcd'),
+          tag    = cms.string('JR_'+jerera+'_MC_SF_AK8PFPuppi'),
+          label  = cms.untracked.string('AK8PFPuppi')
+          ),
+
         
           
         #######
