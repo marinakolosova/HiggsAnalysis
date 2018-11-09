@@ -6,7 +6,7 @@ import FWCore.ParameterSet.Config as cms
 AK8Jets = cms.PSet(
     branchname = cms.untracked.string("AK8Jets"),
     src = cms.InputTag("selectedPatJetsAK8PFCHS"),
-    systVariations = cms.bool(True),
+    systVariations = cms.bool(False),
     srcJESup   = cms.InputTag("shiftedPatJetEnUpModiedMET"),
     srcJESdown = cms.InputTag("shiftedPatJetEnDownModiedMET"),
     srcJERup   = cms.InputTag("shiftedPatSmearedJetResUpModiedMET"),
