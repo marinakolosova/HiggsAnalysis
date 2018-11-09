@@ -329,12 +329,10 @@ hplus2tbAnalysisDatasets.extend(datasetsTTZToQQ)
 
 # Trigger Efficiency (h2tb)
 JetTriggersDatasets = []
-#JetTriggersDatasets.extend(datasetsJetHTData)  
-#JetTriggersDatasets.extend(datasetsMuonData03Feb)
-# JetTriggersDatasets.extend(datasetsMuonData17Apr)
-#JetTriggersDatasets.extend(datasetsSignalTB) 
+JetTriggersDatasets.extend(datasetsMuonData)
+JetTriggersDatasets.extend(datasetsSignalTB) 
 JetTriggersDatasets.extend(datasetsTop)
-#JetTriggersDatasets.extend(datasetsQCD_HT)   
+JetTriggersDatasets.extend(datasetsTopSemileptonic)
 JetTriggersDatasets.extend(datasetsQCDMuEnriched)
 
 # Top BDT Systematics
@@ -406,8 +404,8 @@ class DatasetGroup:
         self.GroupDict["METLeg"]           = metLegDatasets
         self.GroupDict["L1Study"]          = l1Datasets
         self.GroupDict["All"]              = signalAnalysisDatasets + hplus2tbAnalysisDatasets + metLegDatasets + metLegDatasets
-        """
         self.GroupDict["JetTriggers"]      = JetTriggersDatasets
+        """
         self.GroupDict["TopSystBDT"]       = TopSystBDTDatasets
         self.GroupDict["All"]              = signalAnalysisDatasets + hplus2tbAnalysisDatasets + metLegDatasets + metLegDatasets + TopSystBDTDatasets
         """
