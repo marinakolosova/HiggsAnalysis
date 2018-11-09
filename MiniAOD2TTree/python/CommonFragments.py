@@ -50,7 +50,7 @@ def produceAK8JEC(process, isData):
     jetToolbox( process, 'ak8', 'ak8JetSubs', 'out',
                 updateCollection="slimmedJetsAK8",
                 JETCorrPayload="AK8PFchs", JETCorrLevels = JEC,
-                postFix='',
+                postFix='', Cut="pt > 170.0",  # Cut needed to fix this issue: https://hypernews.cern.ch/HyperNews/CMS/get/JetMET/1785/1/1/1/1/1.html
                 )
     return
 

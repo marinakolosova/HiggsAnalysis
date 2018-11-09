@@ -234,8 +234,6 @@ process.dump = cms.EDFilter('MiniAOD2TTreeFilter',
 	L1Extra        = cms.InputTag("l1extraParticles:MET"),
 	TriggerObjects = cms.InputTag("selectedPatTrigger"),
         TriggerMatch   = cms.untracked.vstring(
-            #"HLT_PFHT400_SixJet30_DoubleBTagCSV_p056_v",
-            #"HLT_PFHT450_SixJet40_BTagCSV_p056_v",
         ),
 	filter = cms.untracked.bool(False)
     ),
@@ -244,7 +242,7 @@ process.dump = cms.EDFilter('MiniAOD2TTreeFilter',
     Electrons = process.Electrons,
     Muons     = process.Muons,
     Jets      = process.Jets,
-    #FatJets   = process.FatJets,
+    FatJets   = process.FatJets,
     #SoftBTag  = process.SoftBTag,
     Top       = process.Top,
     METs      = process.METs,
@@ -331,7 +329,7 @@ process.runEDFilter = cms.Path(process.PUInfo*
                                process.skim*
                                process.skimCounterPassed*
                                process.CustomisationsSequence*
-                               #process.AK8CustomisationsSequence*
+                               process.AK8CustomisationsSequence*
                                process.dump)
 
 
