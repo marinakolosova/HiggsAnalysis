@@ -40,6 +40,7 @@ protected:
   const Branch<std::vector<float>> *fEffAreaMiniIso;
   const Branch<std::vector<float>> *fRelIsoDeltaBeta;
   const Branch<std::vector<float>> *fRelMiniIso;
+  const Branch<std::vector<short>> *fCharge;
 };
 
 
@@ -74,6 +75,7 @@ public:
   float effAreaMiniIso() const { return this->fCollection->fEffAreaMiniIso->value()[this->index()]; }
   float relIsoDeltaBeta() const { return this->fCollection->fRelIsoDeltaBeta->value()[this->index()]; }
   float relMiniIso() const { return this->fCollection->fRelMiniIso->value()[this->index()]; }
+  short charge() const { return this->fCollection->fCharge->value()[this->index()]; }
 
 protected:
   Particle<ParticleCollection<double>> fMCelectron;

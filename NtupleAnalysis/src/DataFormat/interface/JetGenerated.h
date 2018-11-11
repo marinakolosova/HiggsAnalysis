@@ -22,7 +22,7 @@ public:
   void setupBranches(BranchManager& mgr);
 
   std::vector<std::string> getBJetTagsDiscriminatorNames() const {
-    static std::vector<std::string> n = { std::string("pfCombinedCvsBJetTags"), std::string("pfCombinedInclusiveSecondaryVertexV2BJetTags"), std::string("pfCombinedMVAV2BJetTags"), std::string("pfCombinedSecondaryVertexV2BJetTags"), std::string("pfJetBProbabilityBJetTags"), std::string("pfJetProbabilityBJetTags"), std::string("pfSimpleInclusiveSecondaryVertexHighEffBJetTags"), std::string("pfSimpleSecondaryVertexHighEffBJetTags"), std::string("pfTrackCountingHighEffBJetTags"), std::string("softPFElectronBJetTags"), std::string("softPFMuonBJetTags"), std::string("tightpfCombinedCvsBJetTags"), std::string("tightpfCombinedInclusiveSecondaryVertexV2BJetTags"), std::string("tightpfCombinedSecondaryVertexV2BJetTags")};
+    static std::vector<std::string> n = { std::string("pfCombinedCvsBJetTags"), std::string("pfCombinedInclusiveSecondaryVertexV2BJetTags"), std::string("pfCombinedMVAV2BJetTags"), std::string("pfCombinedSecondaryVertexV2BJetTags"), std::string("pfJetBProbabilityBJetTags"), std::string("pfJetProbabilityBJetTags"), std::string("pfSimpleInclusiveSecondaryVertexHighEffBJetTags"), std::string("pfSimpleSecondaryVertexHighEffBJetTags"), std::string("pfTrackCountingHighEffBJetTags"), std::string("softPFElectronBJetTags"), std::string("softPFMuonBJetTags")};
     return n;
   }
   std::vector<std::string> getPUIDDiscriminatorNames() const {
@@ -50,16 +50,22 @@ protected:
   const Branch<std::vector<bool>> *fOriginatesFromUnknown;
   const Branch<std::vector<bool>> *fOriginatesFromW;
   const Branch<std::vector<bool>> *fOriginatesFromZ;
-  const Branch<std::vector<double>> *fAK4PFCHSpileupJetIdEvaluatorfullDiscriminant;
-  const Branch<std::vector<double>> *fQGTaggerAK4PFCHSaxis2;
-  const Branch<std::vector<double>> *fQGTaggerAK4PFCHSptD;
-  const Branch<std::vector<double>> *fQGTaggerAK4PFCHSqgLikelihood;
+  const Branch<std::vector<double>> *fQGTaggerqgLikelihood;
+  const Branch<std::vector<double>> *fAxis1;
+  const Branch<std::vector<double>> *fAxis2;
+  const Branch<std::vector<double>> *fCaloJetMapemEnergyFraction;
+  const Branch<std::vector<double>> *fCaloJetMappt;
   const Branch<std::vector<double>> *fPileupJetIdfullDiscriminant;
+  const Branch<std::vector<double>> *fPtD;
   const Branch<std::vector<float>> *fPfCombinedCvsBJetTags;
   const Branch<std::vector<float>> *fPfCombinedCvsLJetTags;
   const Branch<std::vector<float>> *fPfCombinedInclusiveSecondaryVertexV2BJetTags;
   const Branch<std::vector<float>> *fPfCombinedMVAV2BJetTags;
   const Branch<std::vector<float>> *fPfCombinedSecondaryVertexV2BJetTags;
+  const Branch<std::vector<float>> *fPfDeepCSVJetTagsprobb;
+  const Branch<std::vector<float>> *fPfDeepCSVJetTagsprobbb;
+  const Branch<std::vector<float>> *fPfDeepCSVJetTagsprobc;
+  const Branch<std::vector<float>> *fPfDeepCSVJetTagsprobudsg;
   const Branch<std::vector<float>> *fPfJetBProbabilityBJetTags;
   const Branch<std::vector<float>> *fPfJetProbabilityBJetTags;
   const Branch<std::vector<float>> *fPfSimpleInclusiveSecondaryVertexHighEffBJetTags;
@@ -67,12 +73,8 @@ protected:
   const Branch<std::vector<float>> *fPfTrackCountingHighEffBJetTags;
   const Branch<std::vector<float>> *fSoftPFElectronBJetTags;
   const Branch<std::vector<float>> *fSoftPFMuonBJetTags;
-  const Branch<std::vector<float>> *fTightpfCombinedCvsBJetTags;
-  const Branch<std::vector<float>> *fTightpfCombinedCvsLJetTags;
-  const Branch<std::vector<float>> *fTightpfCombinedInclusiveSecondaryVertexV2BJetTags;
-  const Branch<std::vector<float>> *fTightpfCombinedSecondaryVertexV2BJetTags;
-  const Branch<std::vector<int>> *fQGTaggerAK4PFCHSmult;
   const Branch<std::vector<int>> *fHadronFlavour;
+  const Branch<std::vector<int>> *fMult;
   const Branch<std::vector<int>> *fPartonFlavour;
 };
 
@@ -99,10 +101,7 @@ public:
       [&](){ return this->pfSimpleSecondaryVertexHighEffBJetTags(); },
       [&](){ return this->pfTrackCountingHighEffBJetTags(); },
       [&](){ return this->softPFElectronBJetTags(); },
-      [&](){ return this->softPFMuonBJetTags(); },
-      [&](){ return this->tightpfCombinedCvsBJetTags(); },
-      [&](){ return this->tightpfCombinedInclusiveSecondaryVertexV2BJetTags(); },
-      [&](){ return this->tightpfCombinedSecondaryVertexV2BJetTags(); }
+      [&](){ return this->softPFMuonBJetTags(); }
     };
     return values;
   }
@@ -136,16 +135,22 @@ public:
   bool originatesFromUnknown() const { return this->fCollection->fOriginatesFromUnknown->value()[this->index()]; }
   bool originatesFromW() const { return this->fCollection->fOriginatesFromW->value()[this->index()]; }
   bool originatesFromZ() const { return this->fCollection->fOriginatesFromZ->value()[this->index()]; }
-  double AK4PFCHSpileupJetIdEvaluatorfullDiscriminant() const { return this->fCollection->fAK4PFCHSpileupJetIdEvaluatorfullDiscriminant->value()[this->index()]; }
-  double QGTaggerAK4PFCHSaxis2() const { return this->fCollection->fQGTaggerAK4PFCHSaxis2->value()[this->index()]; }
-  double QGTaggerAK4PFCHSptD() const { return this->fCollection->fQGTaggerAK4PFCHSptD->value()[this->index()]; }
-  double QGTaggerAK4PFCHSqgLikelihood() const { return this->fCollection->fQGTaggerAK4PFCHSqgLikelihood->value()[this->index()]; }
+  double QGTaggerqgLikelihood() const { return this->fCollection->fQGTaggerqgLikelihood->value()[this->index()]; }
+  double axis1() const { return this->fCollection->fAxis1->value()[this->index()]; }
+  double axis2() const { return this->fCollection->fAxis2->value()[this->index()]; }
+  double caloJetMapemEnergyFraction() const { return this->fCollection->fCaloJetMapemEnergyFraction->value()[this->index()]; }
+  double caloJetMappt() const { return this->fCollection->fCaloJetMappt->value()[this->index()]; }
   double pileupJetIdfullDiscriminant() const { return this->fCollection->fPileupJetIdfullDiscriminant->value()[this->index()]; }
+  double ptD() const { return this->fCollection->fPtD->value()[this->index()]; }
   float pfCombinedCvsBJetTags() const { return this->fCollection->fPfCombinedCvsBJetTags->value()[this->index()]; }
   float pfCombinedCvsLJetTags() const { return this->fCollection->fPfCombinedCvsLJetTags->value()[this->index()]; }
   float pfCombinedInclusiveSecondaryVertexV2BJetTags() const { return this->fCollection->fPfCombinedInclusiveSecondaryVertexV2BJetTags->value()[this->index()]; }
   float pfCombinedMVAV2BJetTags() const { return this->fCollection->fPfCombinedMVAV2BJetTags->value()[this->index()]; }
   float pfCombinedSecondaryVertexV2BJetTags() const { return this->fCollection->fPfCombinedSecondaryVertexV2BJetTags->value()[this->index()]; }
+  float pfDeepCSVJetTagsprobb() const { return this->fCollection->fPfDeepCSVJetTagsprobb->value()[this->index()]; }
+  float pfDeepCSVJetTagsprobbb() const { return this->fCollection->fPfDeepCSVJetTagsprobbb->value()[this->index()]; }
+  float pfDeepCSVJetTagsprobc() const { return this->fCollection->fPfDeepCSVJetTagsprobc->value()[this->index()]; }
+  float pfDeepCSVJetTagsprobudsg() const { return this->fCollection->fPfDeepCSVJetTagsprobudsg->value()[this->index()]; }
   float pfJetBProbabilityBJetTags() const { return this->fCollection->fPfJetBProbabilityBJetTags->value()[this->index()]; }
   float pfJetProbabilityBJetTags() const { return this->fCollection->fPfJetProbabilityBJetTags->value()[this->index()]; }
   float pfSimpleInclusiveSecondaryVertexHighEffBJetTags() const { return this->fCollection->fPfSimpleInclusiveSecondaryVertexHighEffBJetTags->value()[this->index()]; }
@@ -153,12 +158,8 @@ public:
   float pfTrackCountingHighEffBJetTags() const { return this->fCollection->fPfTrackCountingHighEffBJetTags->value()[this->index()]; }
   float softPFElectronBJetTags() const { return this->fCollection->fSoftPFElectronBJetTags->value()[this->index()]; }
   float softPFMuonBJetTags() const { return this->fCollection->fSoftPFMuonBJetTags->value()[this->index()]; }
-  float tightpfCombinedCvsBJetTags() const { return this->fCollection->fTightpfCombinedCvsBJetTags->value()[this->index()]; }
-  float tightpfCombinedCvsLJetTags() const { return this->fCollection->fTightpfCombinedCvsLJetTags->value()[this->index()]; }
-  float tightpfCombinedInclusiveSecondaryVertexV2BJetTags() const { return this->fCollection->fTightpfCombinedInclusiveSecondaryVertexV2BJetTags->value()[this->index()]; }
-  float tightpfCombinedSecondaryVertexV2BJetTags() const { return this->fCollection->fTightpfCombinedSecondaryVertexV2BJetTags->value()[this->index()]; }
-  int QGTaggerAK4PFCHSmult() const { return this->fCollection->fQGTaggerAK4PFCHSmult->value()[this->index()]; }
   int hadronFlavour() const { return this->fCollection->fHadronFlavour->value()[this->index()]; }
+  int mult() const { return this->fCollection->fMult->value()[this->index()]; }
   int partonFlavour() const { return this->fCollection->fPartonFlavour->value()[this->index()]; }
 
 protected:

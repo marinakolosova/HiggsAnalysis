@@ -19,4 +19,5 @@ void ElectronGeneratedCollection::setupBranches(BranchManager& mgr) {
   mgr.book(prefix()+"_effAreaMiniIso", &fEffAreaMiniIso);
   mgr.book(prefix()+"_relIsoDeltaBeta", &fRelIsoDeltaBeta);
   mgr.book(prefix()+"_relMiniIso", &fRelMiniIso);
+  mgr.book(prefix()+"_charge", &fCharge);
 }
