@@ -58,9 +58,9 @@ private:
   WrappedTH1* h_FatJets_pdgId;
   WrappedTH1* h_FatJets_partonFlavour;
   WrappedTH1* h_FatJets_hadronFlavour;
-  WrappedTH1* h_FatJets_NjettinessAK8tau1;
-  WrappedTH1* h_FatJets_NjettinessAK8tau2;
-  WrappedTH1* h_FatJets_NjettinessAK8tau3;
+  WrappedTH1* h_FatJets_NjettinessAK8CHSTau1;
+  WrappedTH1* h_FatJets_NjettinessAK8CHSTau2;
+  WrappedTH1* h_FatJets_NjettinessAK8CHSTau3;
   WrappedTH1* h_FatJets_NumberOfDaughters;
   WrappedTH1* h_FatJets_NSubjets;
   WrappedTH1* h_FatJets_SDsubjet1_csv;
@@ -159,9 +159,9 @@ void TestFatJets::book(TDirectory *dir) {
   h_FatJets_pdgId = fHistoWrapper.makeTH<TH1F>(HistoLevel::kInformative, dir, "FatJets_pdgId"  , "Fat Jets pdgID"             , 40, -20, 20);
   h_FatJets_partonFlavour = fHistoWrapper.makeTH<TH1F>(HistoLevel::kInformative, dir, "FatJets_partonFlavour"  , "Fat Jets parton flavour"     , 40, -20, 20);
   h_FatJets_hadronFlavour = fHistoWrapper.makeTH<TH1F>(HistoLevel::kInformative, dir, "FatJets_hadronFlavout"  , "Fat Jets hadron flavour"     , 7, 0.0, 7.0);
-  h_FatJets_NjettinessAK8tau1 = fHistoWrapper.makeTH<TH1F>(HistoLevel::kInformative, dir, "FatJets_NjettinessAK8tau1", "Fat Jets #tau_{1}", 100, 0.0, 1.0);
-  h_FatJets_NjettinessAK8tau2 = fHistoWrapper.makeTH<TH1F>(HistoLevel::kInformative, dir, "FatJets_NjettinessAK8tau2", "Fat Jets #tau_{2}", 100, 0.0, 1.0);
-  h_FatJets_NjettinessAK8tau3 = fHistoWrapper.makeTH<TH1F>(HistoLevel::kInformative, dir, "FatJets_NjettinessAK8tau3", "Fat Jets #tau_{3}", 100, 0.0, 1.0);
+  h_FatJets_NjettinessAK8CHSTau1 = fHistoWrapper.makeTH<TH1F>(HistoLevel::kInformative, dir, "FatJets_NjettinessAK8CHSTau1", "Fat Jets #tau_{1}", 100, 0.0, 1.0);
+  h_FatJets_NjettinessAK8CHSTau2 = fHistoWrapper.makeTH<TH1F>(HistoLevel::kInformative, dir, "FatJets_NjettinessAK8CHSTau2", "Fat Jets #tau_{2}", 100, 0.0, 1.0);
+  h_FatJets_NjettinessAK8CHSTau3 = fHistoWrapper.makeTH<TH1F>(HistoLevel::kInformative, dir, "FatJets_NjettinessAK8CHSTau3", "Fat Jets #tau_{3}", 100, 0.0, 1.0);
   h_FatJets_IDLoose = fHistoWrapper.makeTH<TH1F>(HistoLevel::kInformative, dir, "FatJets_IDLoose", "Fat Jets with Loose ID", 2, 0.0, 2.0);
   h_FatJets_NSubjets = fHistoWrapper.makeTH<TH1F>(HistoLevel::kInformative, dir, "FatJets_NSubjets", "Fat Jets Subjets Multiplicity", 10, -0.5, 9.5);
   h_FatJets_tau21 = fHistoWrapper.makeTH<TH1F>(HistoLevel::kInformative, dir, "FatJets_tau21", "Fat Jets #tau_{2}/#tau_{1}", 100, 0.0, 1.0);
@@ -352,12 +352,12 @@ void TestFatJets::process(Long64_t entry) {
       double eta= jet.eta();
       double phi= jet.phi();			
       double e  = jet.e();
-      double mass_pruned = jet.ak8PFJetsCHSPrunedMass();
+      double mass_pruned = jet.PrunedMass();
       double mass_prunedCorr = jet.corrPrunedMass();
-      double mass_sd = jet.ak8PFJetsCHSSoftDropMass();
-      double tau1 = jet.NjettinessAK8tau1();
-      double tau2 = jet.NjettinessAK8tau2();
-      double tau3 = jet.NjettinessAK8tau3();
+      double mass_sd = jet.SoftDropMass();
+      double tau1 = jet.NjettinessAK8CHSTau1();
+      double tau2 = jet.NjettinessAK8CHSTau2();
+      double tau3 = jet.NjettinessAK8CHSTau3();
       
       bool IDloose = jet.IDloose();
       
@@ -378,9 +378,9 @@ void TestFatJets::process(Long64_t entry) {
       h_FatJets_pdgId -> Fill(pdgId);
       h_FatJets_partonFlavour -> Fill(partonFlavour);
       h_FatJets_hadronFlavour -> Fill(hadronFlavour);
-      h_FatJets_NjettinessAK8tau1 -> Fill(tau1);
-      h_FatJets_NjettinessAK8tau2 -> Fill(tau2);
-      h_FatJets_NjettinessAK8tau3 -> Fill(tau3);
+      h_FatJets_NjettinessAK8CHSTau1 -> Fill(tau1);
+      h_FatJets_NjettinessAK8CHSTau2 -> Fill(tau2);
+      h_FatJets_NjettinessAK8CHSTau3 -> Fill(tau3);
       h_FatJets_NumberOfDaughters -> Fill(nDaughters);
       h_FatJets_tau21 -> Fill(tau2/tau1);
       h_FatJets_tau32 -> Fill(tau3/tau2);
