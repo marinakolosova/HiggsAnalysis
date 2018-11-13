@@ -22,6 +22,7 @@
 <use name="RecoBTag/Records"/>
 <use name="HLTrigger/HLTcore"/>
 <use name="RecoVertex/PrimaryVertexProducer"/>
+<use name="TrackingTools/IPTools"/>
 <export>
   <lib name="HiggsAnalysisMiniAOD2TTree"/>
 </export>
