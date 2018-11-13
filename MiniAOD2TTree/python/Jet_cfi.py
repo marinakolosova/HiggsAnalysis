@@ -52,14 +52,11 @@ AK4Jets = cms.PSet(
         ),
     userFloats = cms.vstring(
         "pileupJetId:fullDiscriminant",
-        "AK4PFCHSpileupJetIdEvaluator:fullDiscriminant",
         "QGTaggerAK4PFCHS:qgLikelihood",
-        "QGTaggerAK4PFCHS:ptD",
-        "QGTaggerAK4PFCHS:axis2",
         ),       
     userInts = cms.vstring(
-        "QGTaggerAK4PFCHS:mult",
         ),
+    fillPFCands = cms.bool(False),
     )
 
 AK4JetsPUPPI = cms.PSet(
