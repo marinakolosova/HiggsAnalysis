@@ -9,10 +9,9 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/Common/interface/View.h"
 #include "DataFormats/Common/interface/Ptr.h"
-
+#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 #include "CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h"
-#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 
 #include <string>
 #include <vector>
@@ -23,7 +22,13 @@
 #include "HiggsAnalysis/MiniAOD2TTree/interface/FourVectorDumper.h"
 
 #include "DataFormats/PatCandidates/interface/Jet.h"
+#include "DataFormats/PatCandidates/interface/PackedCandidate.h"
+
+#include "HiggsAnalysis/MiniAOD2TTree/interface/QGTaggingVariables.h"
+#include "HiggsAnalysis/MiniAOD2TTree/interface/TrackInfoBuilder.h"
 //#include "DataFormats/BTauReco/interface/CATopJetTagInfo.h"
+
+class QGTaggingVariables;
 
 class FatJetDumper : public BaseDumper {
     public:
@@ -49,14 +54,14 @@ class FatJetDumper : public BaseDumper {
 	
 	edm::EDGetTokenT<double> rho_token;
 	edm::EDGetTokenT<reco::VertexCollection> vertex_token;
-	
+	edm::EDGetTokenT<reco::VertexCompositePtrCandidateCollection> svToken;
+	edm::ESHandle<TransientTrackBuilder> builder_;
+
         std::vector<float> *discriminators;
-        std::vector<double> *userfloats;
+	std::vector<double> *userfloats;
 	int nUserfloats;
 	std::vector<int> *userints;
 	int nUserints;
-	std::vector<double> *groomedmasses;
-	int nGroomedMasses;
 	std::vector<double> *userfloats_Puppi;
 	int nUserfloats_Puppi;
 	
@@ -81,6 +86,7 @@ class FatJetDumper : public BaseDumper {
         FourVectorDumper *systJERup;
         FourVectorDumper *systJERdown;
 	
+	bool fillPFCands;
 	bool fillPuppi;
 	
 	std::string mcjecPath;
@@ -98,12 +104,20 @@ class FatJetDumper : public BaseDumper {
 	std::vector<double> *sdsubjet1_phi;
 	std::vector<double> *sdsubjet1_mass;
 	std::vector<double> *sdsubjet1_csv;
+	std::vector<double> *sdsubjet1_axis1;
+	std::vector<double> *sdsubjet1_axis2;
+	std::vector<double> *sdsubjet1_ptD;
+	std::vector<int> *sdsubjet1_mult;
 	
 	std::vector<double> *sdsubjet2_pt;
 	std::vector<double> *sdsubjet2_eta;
 	std::vector<double> *sdsubjet2_phi;
 	std::vector<double> *sdsubjet2_mass;
 	std::vector<double> *sdsubjet2_csv;
+	std::vector<double> *sdsubjet2_axis1;
+	std::vector<double> *sdsubjet2_axis2;
+	std::vector<double> *sdsubjet2_ptD;
+	std::vector<int> *sdsubjet2_mult;
 	
 	// PUPPI 
 	std::vector<double> *corrPrunedMass_PUPPI;
@@ -121,5 +135,61 @@ class FatJetDumper : public BaseDumper {
 	std::vector<double> *sdsubjet2_PUPPI_mass;
 	std::vector<double> *sdsubjet2_PUPPI_csv;
 	
+	// Jet Constituent variables
+	std::vector<std::vector<double>> *pfCand_pt;
+	std::vector<std::vector<double>> *pfCand_eta;
+	std::vector<std::vector<double>> *pfCand_phi;
+	std::vector<std::vector<double>> *pfCand_energy;
+	std::vector<std::vector<double>> *pfCand_hcalFraction;
+	std::vector<std::vector<double>> *pfCand_puppiWeight;
+	std::vector<std::vector<int>>    *pfCand_charge;
+	std::vector<std::vector<int>>    *pfCand_pdgId;
+	std::vector<std::vector<int>>    *pfCand_pvAssociationQuality;
+	std::vector<std::vector<int>>    *pfCand_lostInnerHits;
+	std::vector<std::vector<double>> *pfCand_dz;
+	std::vector<std::vector<double>> *pfCand_dxy;
+	std::vector<std::vector<double>> *pfCand_dzError;
+	std::vector<std::vector<double>> *pfCand_dxyError;
+	std::vector<std::vector<double>> *pfCand_vertexNormChi2;
+	std::vector<std::vector<int>>    *pfCand_qualityMask;
+	std::vector<std::vector<double>> *pfCand_dptdpt;
+	std::vector<std::vector<double>> *pfCand_detadeta;
+	std::vector<std::vector<double>> *pfCand_dphidphi;
+	std::vector<std::vector<double>> *pfCand_dxydxy;
+	std::vector<std::vector<double>> *pfCand_dzdz;
+	std::vector<std::vector<double>> *pfCand_dxydz;
+	std::vector<std::vector<double>> *pfCand_dphidxy;
+	std::vector<std::vector<double>> *pfCand_dlambdadz;
+	std::vector<std::vector<double>> *pfCand_minDRsv;
+	std::vector<std::vector<double>> *track_momentum;
+	std::vector<std::vector<double>> *track_eta;
+	std::vector<std::vector<double>> *track_etarel;
+	std::vector<std::vector<double>> *track_ptrel;
+	std::vector<std::vector<double>> *track_ppar;
+	std::vector<std::vector<double>> *track_deltar;
+	std::vector<std::vector<double>> *track_ptratio;
+	std::vector<std::vector<double>> *track_pparratio;
+	std::vector<std::vector<double>> *track_sip2dval;
+	std::vector<std::vector<double>> *track_sip2dsig;
+	std::vector<std::vector<double>> *track_sip3dval;
+	std::vector<std::vector<double>> *track_sip3dsig;
+	std::vector<std::vector<double>> *track_jetdistval;
+
+	float checkNan(const float &val)
+        {
+          if(std::isinf(val) || std::isnan(val))
+            {
+              return 0.0;
+            }
+          else if(val < -1e32 || val > 1e32)
+            {
+              return 0.0;
+            }
+          return val;
+        }
+	
+ protected:
+	QGTaggingVariables* qgTaggingVariables;
+
 };
 #endif
