@@ -1,36 +1,48 @@
-#================================================================================================
+#=======x=========================================================================================
 # Import modules
 #================================================================================================
 import FWCore.ParameterSet.Config as cms
 
 AK8Jets = cms.PSet(
     branchname = cms.untracked.string("AK8Jets"),
-    src        = cms.InputTag("updatedPatJetsAK8PFCHS"),
+    src        = cms.InputTag("selectedUpdatedPatJetsAK8PFCHS"),  # Default
+    #src        = cms.InputTag("selectedUpdatedPatJetsAK8PFCHSSoftDropPacked"),    
     systVariations = cms.bool(False), # bug => requires fix!
     srcJESup   = cms.InputTag("shiftedPatJetEnUp"),
     srcJESdown = cms.InputTag("shiftedPatJetEnDown"),
     srcJERup   = cms.InputTag("shiftedPatSmearedJetResUp"),
     srcJERdown = cms.InputTag("shiftedPatSmearedJetResDown"),
-        
     discriminators = cms.vstring(
         "pfCombinedInclusiveSecondaryVertexV2BJetTags",
+        "pfBoostedDoubleSecondaryVertexAK8BJetTags",
+        "pfDeepCSVJetTags:probb",
+        "pfDeepCSVJetTags:probc",
+        "pfDeepCSVJetTags:probudsg",
+        "pfDeepCSVJetTags:probbb",
+        "pfDeepCSVJetTags:probcc",
         ),
     userFloats = cms.vstring(
         "NjettinessAK8:tau1",
         "NjettinessAK8:tau2",
         "NjettinessAK8:tau3",
-        ),
-    userInts = cms.vstring(
-        ),
-    groomedmasses = cms.vstring(
+        "NjettinessAK8:tau4",
+        "ECFAK8:ecf1",
+        "ECFAK8:ecf2",
+        "ECFAK8:ecf3",
+        "QJetsAdderAK8:QjetsVolatility",
         "ak8PFJetsCHSPrunedMass",
         "ak8PFJetsCHSSoftDropMass",
+        "ak8PFJetsCHSTrimmedMass",
+        "ak8PFJetsCHSFilteredMass",
+        "cmsTopTagPFJetsCHSMassAK8",
+        ),
+    userInts = cms.vstring(
         ),
     mcjecPath   = cms.untracked.string("jec/Summer16_23Sep2016V4"),
     datajecPath = cms.untracked.string("jec/Summer16_23Sep2016BCDV4"), 
     rho         = cms.InputTag("fixedGridRhoFastjetAll"),
     vertices    = cms.InputTag("offlineSlimmedPrimaryVertices"),
-
+    
     # PUPPI related variables from MiniAOD
     fillPuppi = cms.bool(False),
     userFloatsPuppi = cms.vstring(
@@ -42,6 +54,7 @@ AK8Jets = cms.PSet(
         "ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau2",
         "ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau3",
         ),
+    fillPFCands = cms.bool(False),
 )
 
 FatJets = cms.VPSet()

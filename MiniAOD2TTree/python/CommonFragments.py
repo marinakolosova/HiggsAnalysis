@@ -18,7 +18,7 @@ def produceCustomisations(process, isData):
     process.CustomisationsSequence = cms.Sequence()
 #    produceJets(process, isData)
 #    reproduceJEC(process)
-    reproduceElectronID(process)      # Marina (To produce MVA)
+    reproduceElectronID(process)
     reproduceMETNoiseFilters(process)
     reproduceMET(process, isData)
 #    reproduceJEC(process)
@@ -27,27 +27,106 @@ def produceCustomisations(process, isData):
 
 # AK8 Customisations
 def produceAK8Customisations(process, isData):
+    print "\n"
+    print "=== AK8 Customisations"
+    print "\n"
     process.AK8CustomisationsSequence = cms.Sequence()
     produceAK8JEC(process, isData)
+    print "\n"
     print "=== AK8 Customisations done"
-
+    print "\n"
+    
 def produceAK8JEC(process, isData):
-    from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
+    process.load("Configuration.EventContent.EventContent_cff")
+    process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
+    process.load('Configuration.StandardSequences.MagneticField_38T_cff')
+    process.load('Configuration.StandardSequences.Services_cff')
     
     JEC = ['L1FastJet','L2Relative','L3Absolute']
     if isData:
         JEC += ['L2L3Residual']
         
-    updateJetCollection(
-        process,
-        labelName = 'AK8PFCHS',
-        jetSource = cms.InputTag("slimmedJetsAK8"),
-        rParam = 0.8,
-        jetCorrections = ('AK8PFchs', cms.vstring(JEC), 'None') 
-    )
+    from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
+    jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', 
+                updateCollection="slimmedJetsAK8",
+                updateCollectionSubjets="slimmedJetsAK8PFCHSSoftDropPacked", subJETCorrPayload="AK4PFchs", subJETCorrLevels=JEC,
+                JETCorrPayload="AK8PFchs", JETCorrLevels = JEC, postFix='',
+                bTagDiscriminators = ['pfCombinedInclusiveSecondaryVertexV2BJetTags', 'pfCombinedMVAV2BJetTags','pfCombinedCvsBJetTags','pfCombinedCvsLJetTags', 
+                                      'pfBoostedDoubleSecondaryVertexAK8BJetTags', 'pfDeepCSVJetTags:probb', 'pfDeepCSVJetTags:probc', 'pfDeepCSVJetTags:probudsg', 
+                                      'pfDeepCSVJetTags:probbb', 'pfDeepCSVJetTags:probcc'],
+                )
     
-    process.AK8CustomisationsSequence += process.patJetCorrFactorsAK8PFCHS
-    process.AK8CustomisationsSequence += process.updatedPatJetsAK8PFCHS
+    process.out.outputCommands += ['keep *_*SoftDropPacked*_*_*']
+    
+    # Njettiness
+    process.load('RecoJets.JetProducers.nJettinessAdder_cfi')
+    process.NjettinessAK8 = process.Njettiness.clone()
+    process.NjettinessAK8.cone = cms.double(0.8)
+    process.NjettinessAK8.src = cms.InputTag("slimmedJetsAK8")
+    getattr( process, 'updatedPatJetsAK8PFCHS').userData.userFloats.src += ['NjettinessAK8:tau1','NjettinessAK8:tau2','NjettinessAK8:tau3', 'NjettinessAK8:tau4']
+    process.out.outputCommands += ['keep *_NjettinessAK8_*_*']
+    
+    # ECF
+    process.load('RecoJets.JetProducers.ECF_cfi')
+    process.ECFAK8 = process.ECF.clone()
+    process.ECFAK8.src = cms.InputTag("slimmedJetsAK8")
+    process.ECFAK8.cone = cms.double(0.8)
+    getattr( process, 'updatedPatJetsAK8PFCHS').userData.userFloats.src += ['ECFAK8:ecf1','ECFAK8:ecf2','ECFAK8:ecf3']
+    process.out.outputCommands += ['keep *_ECFAK8_*_*']
+    
+    # QJetsAdder
+    process.RandomNumberGeneratorService = cms.Service("RandomNumberGeneratorService",
+                                                       QJetsAdderAK8 = cms.PSet(initialSeed = cms.untracked.uint32(31))
+                                                       )
+
+    process.load('RecoJets.JetProducers.qjetsadder_cfi')
+    process.QJetsAdderAK8 = process.QJetsAdder.clone()
+    process.QJetsAdderAK8.src = cms.InputTag("slimmedJetsAK8")
+    process.QJetsAdderAK8.jetAlgo = cms.string('AK')
+    process.QJetsAdderAK8.jetRad  = cms.double(0.8)
+    getattr( process, 'updatedPatJetsAK8PFCHS').userData.userFloats.src += ['QJetsAdderAK8:QjetsVolatility']
+    process.out.outputCommands += ['keep *_QJetsAdderAK8_*_*']
+    
+    # Grooming variables
+    from RecoJets.Configuration.RecoPFJets_cff import ak8PFJetsCHSPruned, ak8PFJetsCHSSoftDrop, ak8PFJetsCHSTrimmed, ak8PFJetsCHSFiltered
+    
+    process.ak8PFJetsCHSSoftDrop = ak8PFJetsCHSSoftDrop.clone()
+    process.ak8PFJetsCHSPruned   = ak8PFJetsCHSPruned.clone()
+    process.ak8PFJetsCHSTrimmed  = ak8PFJetsCHSTrimmed.clone()
+    process.ak8PFJetsCHSFiltered = ak8PFJetsCHSFiltered.clone()
+    
+    process.ak8PFJetsCHSPruned.src   = cms.InputTag("packedPFCandidates")
+    process.ak8PFJetsCHSSoftDrop.src = cms.InputTag("packedPFCandidates")
+    process.ak8PFJetsCHSTrimmed.src  = cms.InputTag("packedPFCandidates")
+    process.ak8PFJetsCHSFiltered.src = cms.InputTag("packedPFCandidates")
+    
+    from RecoJets.Configuration.RecoPFJets_cff import ak8PFJetsCHSPrunedMass, ak8PFJetsCHSSoftDropMass, ak8PFJetsCHSTrimmedMass, ak8PFJetsCHSFilteredMass
+    
+    process.ak8PFJetsCHSPrunedMass   = ak8PFJetsCHSPrunedMass.clone()
+    process.ak8PFJetsCHSSoftDropMass = ak8PFJetsCHSSoftDropMass.clone()
+    process.ak8PFJetsCHSTrimmedMass  = ak8PFJetsCHSTrimmedMass.clone()
+    process.ak8PFJetsCHSFilteredMass = ak8PFJetsCHSFilteredMass.clone()
+    
+    process.ak8PFJetsCHSPrunedMass.src   = cms.InputTag("slimmedJetsAK8")
+    process.ak8PFJetsCHSSoftDropMass.src = cms.InputTag("slimmedJetsAK8")
+    process.ak8PFJetsCHSTrimmedMass.src  = cms.InputTag("slimmedJetsAK8")
+    process.ak8PFJetsCHSFilteredMass.src = cms.InputTag("slimmedJetsAK8")
+    
+    getattr( process, 'updatedPatJetsAK8PFCHS').userData.userFloats.src += ['ak8PFJetsCHSPrunedMass','ak8PFJetsCHSSoftDropMass','ak8PFJetsCHSTrimmedMass','ak8PFJetsCHSFilteredMass']
+    process.out.outputCommands += ['keep *_ak8PFJetsCHSPrunedMass_*_*',
+                                   'keep *_ak8PFJetsCHSSoftDropMass_*_*',
+                                   'keep *_ak8PFJetsCHSTrimmedMass_*_*',
+                                   'keep *_ak8PFJetsCHSFilteredMass_*_*']
+    
+    from RecoJets.JetProducers.caTopTaggers_cff import cmsTopTagPFJetsCHS
+    process.cmsTopTagPFJetsCHS = cmsTopTagPFJetsCHS.clone()
+    process.cmsTopTagPFJetsCHS.src = cms.InputTag("packedPFCandidates")
+    process.cmsTopTagPFJetsCHSMassAK8 = process.ak8PFJetsCHSPrunedMass.clone()
+    process.cmsTopTagPFJetsCHSMassAK8.src = cms.InputTag("slimmedJetsAK8")
+    process.cmsTopTagPFJetsCHSMassAK8.matched = cms.InputTag("cmsTopTagPFJetsCHS")
+    getattr( process, 'updatedPatJetsAK8PFCHS').userData.userFloats.src += ['cmsTopTagPFJetsCHSMassAK8']
+    process.out.outputCommands += ['keep *_cmsTopTagPFJetsCHSMassAK8_*_*']
+        
     return
 
 def produceJets(process, isData):
@@ -76,10 +155,11 @@ def produceJets(process, isData):
     from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
     jetToolbox( process, 'ak4', 'ak4JetSubs', 'out', 
                 addQGTagger=True, addPUJetID=True, JETCorrLevels = JEC,
-                bTagDiscriminators = ['pfCombinedInclusiveSecondaryVertexV2BJetTags', 'pfCombinedMVAV2BJetTags','pfCombinedCvsBJetTags','pfCombinedCvsLJetTags'],
+                bTagDiscriminators = ['pfCombinedInclusiveSecondaryVertexV2BJetTags', 'pfCombinedMVAV2BJetTags','pfCombinedCvsBJetTags','pfCombinedCvsLJetTags',
+                                      'pfDeepCSVJetTags:probb', 'pfDeepCSVJetTags:probc', 'pfDeepCSVJetTags:probudsg', 'pfDeepCSVJetTags:probbb', 'pfDeepCSVJetTags:probcc'],
                 updateCollection='cleanedPatJets', JETCorrPayload="AK4PFchs",
                 postFix='')
-
+    
     # Small fix required to add the variables ptD, axis2, mult. See:
     # https://hypernews.cern.ch/HyperNews/CMS/get/jet-algorithms/418/1.html
     getattr( process, 'updatedPatJetsAK4PFCHS').userData.userFloats.src += ['QGTagger'+'AK4PFCHS'+':ptD']
@@ -133,7 +213,7 @@ def reproduceElectronID(process):
     # define which IDs we want to produce and add them to the VID producer
     for idmod in ['RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Spring16_GeneralPurpose_V1_cff',
                   #'RecoEgamma.ElectronIdentification.Identification.mvaElectronID_PHYS14_PU20bx25_nonTrig_V1_cff', 
-                  ]:   # Marina
+                  ]: 
         setupAllVIDIdsInModule(process, idmod, setupVIDElectronSelection)
     process.CustomisationsSequence += process.egmGsfElectronIDSequence
 

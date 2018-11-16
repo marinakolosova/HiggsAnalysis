@@ -16,6 +16,7 @@ SoftBTagDumper::SoftBTagDumper(edm::ConsumesCollector&& iConsumesCollector, std:
   booked           = false;
 
   svPt         = new std::vector<double>[inputCollections.size()];
+  svEnergy     = new std::vector<double>[inputCollections.size()];
   svEta        = new std::vector<double>[inputCollections.size()];
   svPhi        = new std::vector<double>[inputCollections.size()];
   svMass       = new std::vector<double>[inputCollections.size()];
@@ -51,6 +52,7 @@ void SoftBTagDumper::book(TTree* tree){
     std::string name = inputCollections[i].getUntrackedParameter<std::string>("branchname","");
     if(name.length() == 0) name = inputCollections[i].getParameter<edm::InputTag>("src").label();
     tree->Branch((name+"_pt").c_str()     , &svPt[i]);
+    tree->Branch((name+"_energy").c_str() , &svEnergy[i]);
     tree->Branch((name+"_eta").c_str()    , &svEta[i]);
     tree->Branch((name+"_phi").c_str()    , &svPhi[i]);
     tree->Branch((name+"_mass").c_str()   , &svMass[i]);
@@ -61,7 +63,7 @@ void SoftBTagDumper::book(TTree* tree){
     tree->Branch((name+"_dxyErr").c_str() , &svDxyErr[i]);
     tree->Branch((name+"_d3d").c_str()    , &svD3d[i]);
     tree->Branch((name+"_d3dErr").c_str() , &svD3dErr[i]);
-    tree->Branch((name+"_dotPv").c_str()  , &costhetasvpv[i]);
+    tree->Branch((name+"_costhetasvpv").c_str()  , &costhetasvpv[i]);
     
   }
     
@@ -99,13 +101,13 @@ bool SoftBTagDumper::fill(edm::Event& iEvent, const edm::EventSetup& iSetup){
     
     if(h_secondaryVertex.isValid())
       {
-    
 	// For-loop: All Secondary Verticies
 	for(size_t isv = 0; isv < h_secondaryVertex->size(); isv++ )
 	  {
 	    const reco::VertexCompositePtrCandidate &sv = (*h_secondaryVertex)[isv];
-
+	    
 	    svPt[ic].push_back(sv.pt());
+	    svEnergy[ic].push_back(sv.energy());
 	    svEta[ic].push_back(sv.eta());
 	    svPhi[ic].push_back(sv.phi());
 	    svMass[ic].push_back(sv.mass());
@@ -117,12 +119,8 @@ bool SoftBTagDumper::fill(edm::Event& iEvent, const edm::EventSetup& iSetup){
 	    svD3d[ic].push_back(vertexD3d(sv,PV).value());
 	    svD3dErr[ic].push_back(vertexD3d(sv,PV).error());
 	    costhetasvpv[ic].push_back(vertexDdotP(sv, PV));
-	    
-	    
 	  }//eof: loop on sec vertex
       }
-  
-   
   }//eof: loop on inputcollections
   return filter();
 }
@@ -135,6 +133,7 @@ void SoftBTagDumper::reset(){
   
   for(size_t ic = 0; ic < inputCollections.size(); ++ic){
     svPt[ic].clear();
+    svEnergy[ic].clear();
     svEta[ic].clear();
     svPhi[ic].clear();
     svMass[ic].clear();

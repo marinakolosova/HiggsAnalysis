@@ -15,7 +15,8 @@ import FWCore.ParameterSet.Config as cms
 AK4Jets = cms.PSet(
     branchname = cms.untracked.string("Jets"),
 #        src = cms.InputTag("patJetsReapplyJECAK4CHS"), # made from ak4PFJetsCHS
-        src = cms.InputTag("selectedPatJetsAK4PFCHS"),#updatedPatJetsUpdatedJEC"),
+         src = cms.InputTag("selectedUpdatedPatJetsAK4PFCHS"), # Final pat jet collection with DeepCSV discriminators and JEC applied.
+#        src = cms.InputTag("selectedPatJetsAK4PFCHS"),#updatedPatJetsUpdatedJEC"),
 #        src = cms.InputTag("selectedPatJetsForMetT1T2SmearCorr"),
 #        src = cms.InputTag("cleanedPatJets"),
 #        src = cms.InputTag("patJetsReapplyJEC"),
@@ -42,18 +43,20 @@ AK4Jets = cms.PSet(
         "tightpfCombinedSecondaryVertexV2BJetTags",
         "tightpfCombinedInclusiveSecondaryVertexV2BJetTags",
         "tightpfCombinedCvsLJetTags",
-        "tightpfCombinedCvsBJetTags"
+        "tightpfCombinedCvsBJetTags",
+        "pfDeepCSVJetTags:probb",
+        "pfDeepCSVJetTags:probc",
+        "pfDeepCSVJetTags:probudsg",
+        "pfDeepCSVJetTags:probbb",
+        "pfDeepCSVJetTags:probcc",
         ),
     userFloats = cms.vstring(
         "pileupJetId:fullDiscriminant",
-        "AK4PFCHSpileupJetIdEvaluator:fullDiscriminant",
         "QGTaggerAK4PFCHS:qgLikelihood",
-        "QGTaggerAK4PFCHS:ptD",
-        "QGTaggerAK4PFCHS:axis2",
         ),       
     userInts = cms.vstring(
-        "QGTaggerAK4PFCHS:mult",
         ),
+    fillPFCands = cms.bool(False),
     )
 
 AK4JetsPUPPI = cms.PSet(
