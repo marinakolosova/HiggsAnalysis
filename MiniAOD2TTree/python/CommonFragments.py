@@ -27,16 +27,46 @@ def produceCustomisations(process, isData):
 
 # AK8 Customisations
 def produceAK8Customisations(process, isData):
-    print "\n"
-    print "=== AK8 Customisations"
-    print "\n"
+    print "\n=== AK8 Customisations \n"
     process.AK8CustomisationsSequence = cms.Sequence()
     produceAK8JEC(process, isData)
-    print "\n"
-    print "=== AK8 Customisations done"
-    print "\n"
+    produceAK8PuppiJEC(process, isData)
+    print "\n=== AK8 Customisations done \n"
+
+def produceAK8PuppiJEC(process, isData):
+    print "\n=== Producing AK8 Puppi Jets \n"
+    bTagDiscriminators = ['pfCombinedInclusiveSecondaryVertexV2BJetTags',
+                          'pfBoostedDoubleSecondaryVertexAK8BJetTags',
+                          'pfDeepCSVJetTags:probb', 
+                          'pfDeepCSVJetTags:probc', 
+                          'pfDeepCSVJetTags:probudsg',
+                          'pfDeepCSVJetTags:probbb',
+                          'pfDeepCSVJetTags:probcc'
+                          ]
     
+    JEC = ['L1FastJet','L2Relative','L3Absolute']
+    if isData:
+        JEC += ['L2L3Residual']
+    
+    from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
+    jetToolbox(process, 'ak8', 'jetSequence', 'out', PUMethod='Puppi', JETCorrPayload='AK8PFPuppi', JETCorrLevels=JEC, 
+               Cut='pt > 170.0 && abs(rapidity()) < 2.4', addNsub=True, maxTau=4, addNsubSubjets=True, 
+               addSoftDrop=True, addSoftDropSubjets=True, subJETCorrPayload='AK4PFPuppi', subJETCorrLevels=JEC,
+               bTagDiscriminators = bTagDiscriminators,
+               addEnergyCorrFunc=True,
+               addTrimming=True,
+               addFiltering=True,
+               addPruning=True,
+               ) 
+
+    return
+
+
 def produceAK8JEC(process, isData):
+    '''
+    Rerun AK8 CHS Jets. Needed to get the DeepCSV variables for AK8 SoftDrop Subjets
+    '''
+    print "\n=== Producing AK8 CHS Jets\n"
     process.load("Configuration.EventContent.EventContent_cff")
     process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
     process.load('Configuration.StandardSequences.MagneticField_38T_cff')
@@ -45,88 +75,23 @@ def produceAK8JEC(process, isData):
     JEC = ['L1FastJet','L2Relative','L3Absolute']
     if isData:
         JEC += ['L2L3Residual']
-        
+
     from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
     jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', 
-                updateCollection="slimmedJetsAK8",
-                updateCollectionSubjets="slimmedJetsAK8PFCHSSoftDropPacked", subJETCorrPayload="AK4PFchs", subJETCorrLevels=JEC,
                 JETCorrPayload="AK8PFchs", JETCorrLevels = JEC, postFix='',
+                subJETCorrPayload="AK4PFchs", subJETCorrLevels=JEC,
+                Cut='pt > 170.0 && abs(rapidity()) < 2.4',
                 bTagDiscriminators = ['pfCombinedInclusiveSecondaryVertexV2BJetTags', 'pfCombinedMVAV2BJetTags','pfCombinedCvsBJetTags','pfCombinedCvsLJetTags', 
                                       'pfBoostedDoubleSecondaryVertexAK8BJetTags', 'pfDeepCSVJetTags:probb', 'pfDeepCSVJetTags:probc', 'pfDeepCSVJetTags:probudsg', 
                                       'pfDeepCSVJetTags:probbb', 'pfDeepCSVJetTags:probcc'],
+                addEnergyCorrFunc=True,
+                addTrimming=True,
+                addFiltering=True,
+                addPruning=True,
+                addSoftDrop=True, addSoftDropSubjets=True,
+                addNsub=True, maxTau=4, addNsubSubjets=True,
                 )
     
-    process.out.outputCommands += ['keep *_*SoftDropPacked*_*_*']
-    
-    # Njettiness
-    process.load('RecoJets.JetProducers.nJettinessAdder_cfi')
-    process.NjettinessAK8 = process.Njettiness.clone()
-    process.NjettinessAK8.cone = cms.double(0.8)
-    process.NjettinessAK8.src = cms.InputTag("slimmedJetsAK8")
-    getattr( process, 'updatedPatJetsAK8PFCHS').userData.userFloats.src += ['NjettinessAK8:tau1','NjettinessAK8:tau2','NjettinessAK8:tau3', 'NjettinessAK8:tau4']
-    process.out.outputCommands += ['keep *_NjettinessAK8_*_*']
-    
-    # ECF
-    process.load('RecoJets.JetProducers.ECF_cfi')
-    process.ECFAK8 = process.ECF.clone()
-    process.ECFAK8.src = cms.InputTag("slimmedJetsAK8")
-    process.ECFAK8.cone = cms.double(0.8)
-    getattr( process, 'updatedPatJetsAK8PFCHS').userData.userFloats.src += ['ECFAK8:ecf1','ECFAK8:ecf2','ECFAK8:ecf3']
-    process.out.outputCommands += ['keep *_ECFAK8_*_*']
-    
-    # QJetsAdder
-    process.RandomNumberGeneratorService = cms.Service("RandomNumberGeneratorService",
-                                                       QJetsAdderAK8 = cms.PSet(initialSeed = cms.untracked.uint32(31))
-                                                       )
-
-    process.load('RecoJets.JetProducers.qjetsadder_cfi')
-    process.QJetsAdderAK8 = process.QJetsAdder.clone()
-    process.QJetsAdderAK8.src = cms.InputTag("slimmedJetsAK8")
-    process.QJetsAdderAK8.jetAlgo = cms.string('AK')
-    process.QJetsAdderAK8.jetRad  = cms.double(0.8)
-    getattr( process, 'updatedPatJetsAK8PFCHS').userData.userFloats.src += ['QJetsAdderAK8:QjetsVolatility']
-    process.out.outputCommands += ['keep *_QJetsAdderAK8_*_*']
-    
-    # Grooming variables
-    from RecoJets.Configuration.RecoPFJets_cff import ak8PFJetsCHSPruned, ak8PFJetsCHSSoftDrop, ak8PFJetsCHSTrimmed, ak8PFJetsCHSFiltered
-    
-    process.ak8PFJetsCHSSoftDrop = ak8PFJetsCHSSoftDrop.clone()
-    process.ak8PFJetsCHSPruned   = ak8PFJetsCHSPruned.clone()
-    process.ak8PFJetsCHSTrimmed  = ak8PFJetsCHSTrimmed.clone()
-    process.ak8PFJetsCHSFiltered = ak8PFJetsCHSFiltered.clone()
-    
-    process.ak8PFJetsCHSPruned.src   = cms.InputTag("packedPFCandidates")
-    process.ak8PFJetsCHSSoftDrop.src = cms.InputTag("packedPFCandidates")
-    process.ak8PFJetsCHSTrimmed.src  = cms.InputTag("packedPFCandidates")
-    process.ak8PFJetsCHSFiltered.src = cms.InputTag("packedPFCandidates")
-    
-    from RecoJets.Configuration.RecoPFJets_cff import ak8PFJetsCHSPrunedMass, ak8PFJetsCHSSoftDropMass, ak8PFJetsCHSTrimmedMass, ak8PFJetsCHSFilteredMass
-    
-    process.ak8PFJetsCHSPrunedMass   = ak8PFJetsCHSPrunedMass.clone()
-    process.ak8PFJetsCHSSoftDropMass = ak8PFJetsCHSSoftDropMass.clone()
-    process.ak8PFJetsCHSTrimmedMass  = ak8PFJetsCHSTrimmedMass.clone()
-    process.ak8PFJetsCHSFilteredMass = ak8PFJetsCHSFilteredMass.clone()
-    
-    process.ak8PFJetsCHSPrunedMass.src   = cms.InputTag("slimmedJetsAK8")
-    process.ak8PFJetsCHSSoftDropMass.src = cms.InputTag("slimmedJetsAK8")
-    process.ak8PFJetsCHSTrimmedMass.src  = cms.InputTag("slimmedJetsAK8")
-    process.ak8PFJetsCHSFilteredMass.src = cms.InputTag("slimmedJetsAK8")
-    
-    getattr( process, 'updatedPatJetsAK8PFCHS').userData.userFloats.src += ['ak8PFJetsCHSPrunedMass','ak8PFJetsCHSSoftDropMass','ak8PFJetsCHSTrimmedMass','ak8PFJetsCHSFilteredMass']
-    process.out.outputCommands += ['keep *_ak8PFJetsCHSPrunedMass_*_*',
-                                   'keep *_ak8PFJetsCHSSoftDropMass_*_*',
-                                   'keep *_ak8PFJetsCHSTrimmedMass_*_*',
-                                   'keep *_ak8PFJetsCHSFilteredMass_*_*']
-    
-    from RecoJets.JetProducers.caTopTaggers_cff import cmsTopTagPFJetsCHS
-    process.cmsTopTagPFJetsCHS = cmsTopTagPFJetsCHS.clone()
-    process.cmsTopTagPFJetsCHS.src = cms.InputTag("packedPFCandidates")
-    process.cmsTopTagPFJetsCHSMassAK8 = process.ak8PFJetsCHSPrunedMass.clone()
-    process.cmsTopTagPFJetsCHSMassAK8.src = cms.InputTag("slimmedJetsAK8")
-    process.cmsTopTagPFJetsCHSMassAK8.matched = cms.InputTag("cmsTopTagPFJetsCHS")
-    getattr( process, 'updatedPatJetsAK8PFCHS').userData.userFloats.src += ['cmsTopTagPFJetsCHSMassAK8']
-    process.out.outputCommands += ['keep *_cmsTopTagPFJetsCHSMassAK8_*_*']
-        
     return
 
 def produceJets(process, isData):

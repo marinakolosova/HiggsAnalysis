@@ -46,7 +46,8 @@ class FatJetDumper : public BaseDumper {
     private:
 	edm::EDGetTokenT<reco::GenParticleCollection> genParticleToken;
         edm::EDGetTokenT<edm::View<pat::Jet>> *jetToken;
-
+	edm::EDGetTokenT<edm::View<pat::Jet>> *subjetToken;
+	
         edm::EDGetTokenT<edm::View<pat::Jet>> *jetJESup;
         edm::EDGetTokenT<edm::View<pat::Jet>> *jetJESdown;
         edm::EDGetTokenT<edm::View<pat::Jet>> *jetJERup;
@@ -62,8 +63,6 @@ class FatJetDumper : public BaseDumper {
 	int nUserfloats;
 	std::vector<int> *userints;
 	int nUserints;
-	std::vector<double> *userfloats_Puppi;
-	int nUserfloats_Puppi;
 	
         std::vector<int> *hadronFlavour;
         std::vector<int> *partonFlavour;
@@ -87,8 +86,8 @@ class FatJetDumper : public BaseDumper {
         FourVectorDumper *systJERdown;
 	
 	bool fillPFCands;
-	bool fillPuppi;
 	
+	std::string puMitigationTool;
 	std::string mcjecPath;
 	std::string datajecPath;
 	FactorizedJetCorrector *mcJEC;
@@ -104,37 +103,31 @@ class FatJetDumper : public BaseDumper {
 	std::vector<double> *sdsubjet1_phi;
 	std::vector<double> *sdsubjet1_mass;
 	std::vector<double> *sdsubjet1_csv;
+	std::vector<double> *sdsubjet1_deepcsv;
 	std::vector<double> *sdsubjet1_axis1;
 	std::vector<double> *sdsubjet1_axis2;
 	std::vector<double> *sdsubjet1_ptD;
 	std::vector<int> *sdsubjet1_mult;
+	std::vector<double> *sdsubjet1_tau1;
+	std::vector<double> *sdsubjet1_tau2;
+	std::vector<double> *sdsubjet1_tau3;
+	std::vector<double> *sdsubjet1_tau4;
 	
 	std::vector<double> *sdsubjet2_pt;
 	std::vector<double> *sdsubjet2_eta;
 	std::vector<double> *sdsubjet2_phi;
 	std::vector<double> *sdsubjet2_mass;
 	std::vector<double> *sdsubjet2_csv;
+	std::vector<double> *sdsubjet2_deepcsv;
 	std::vector<double> *sdsubjet2_axis1;
 	std::vector<double> *sdsubjet2_axis2;
 	std::vector<double> *sdsubjet2_ptD;
 	std::vector<int> *sdsubjet2_mult;
-	
-	// PUPPI 
-	std::vector<double> *corrPrunedMass_PUPPI;
-	std::vector<double> *softdropMass_PUPPI;
-	std::vector<int> *nSubjets_PUPPI;
-	std::vector<double> *sdsubjet1_PUPPI_pt;
-	std::vector<double> *sdsubjet1_PUPPI_eta;
-	std::vector<double> *sdsubjet1_PUPPI_phi;
-	std::vector<double> *sdsubjet1_PUPPI_mass;
-	std::vector<double> *sdsubjet1_PUPPI_csv;
-	
-	std::vector<double> *sdsubjet2_PUPPI_pt;
-	std::vector<double> *sdsubjet2_PUPPI_eta;
-	std::vector<double> *sdsubjet2_PUPPI_phi;
-	std::vector<double> *sdsubjet2_PUPPI_mass;
-	std::vector<double> *sdsubjet2_PUPPI_csv;
-	
+	std::vector<double> *sdsubjet2_tau1;
+	std::vector<double> *sdsubjet2_tau2;
+	std::vector<double> *sdsubjet2_tau3;
+	std::vector<double> *sdsubjet2_tau4;
+
 	// Jet Constituent variables
 	std::vector<std::vector<double>> *pfCand_pt;
 	std::vector<std::vector<double>> *pfCand_eta;

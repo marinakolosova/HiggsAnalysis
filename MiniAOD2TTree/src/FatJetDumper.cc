@@ -23,7 +23,6 @@ FatJetDumper::FatJetDumper(edm::ConsumesCollector&& iConsumesCollector, std::vec
     
     systVariations = inputCollections[0].getParameter<bool>("systVariations");
     fillPFCands    = inputCollections[0].getParameter<bool>("fillPFCands");
-    fillPuppi      = inputCollections[0].getParameter<bool>("fillPuppi");
     
     mcjecPath      = inputCollections[0].getUntrackedParameter<std::string>("mcjecPath");
     datajecPath    = inputCollections[0].getUntrackedParameter<std::string>("datajecPath");
@@ -66,10 +65,9 @@ FatJetDumper::FatJetDumper(edm::ConsumesCollector&& iConsumesCollector, std::vec
     userfloats        = new std::vector<double>[inputCollections.size()*nUserfloats];
     nUserints         = inputCollections[0].getParameter<std::vector<std::string> >("userInts").size();
     userints          = new std::vector<int>[inputCollections.size()*nUserints];
-    nUserfloats_Puppi = inputCollections[0].getParameter<std::vector<std::string> >("userFloatsPuppi").size();
-    userfloats_Puppi  = new std::vector<double>[inputCollections.size()*nUserfloats_Puppi];
-    
+        
     jetToken   = new edm::EDGetTokenT<edm::View<pat::Jet> >[inputCollections.size()];
+    subjetToken= new edm::EDGetTokenT<edm::View<pat::Jet> >[inputCollections.size()];
     jetJESup   = new edm::EDGetTokenT<edm::View<pat::Jet> >[inputCollections.size()];
     jetJESdown = new edm::EDGetTokenT<edm::View<pat::Jet> >[inputCollections.size()];
     jetJERup   = new edm::EDGetTokenT<edm::View<pat::Jet> >[inputCollections.size()];
@@ -77,6 +75,11 @@ FatJetDumper::FatJetDumper(edm::ConsumesCollector&& iConsumesCollector, std::vec
     for(size_t i = 0; i < inputCollections.size(); ++i){
         edm::InputTag inputtag = inputCollections[i].getParameter<edm::InputTag>("src");
         jetToken[i] = iConsumesCollector.consumes<edm::View<pat::Jet>>(inputtag);
+	
+	edm::InputTag inputtagSubjet = inputCollections[i].getParameter<edm::InputTag>("subjetsrc");
+	subjetToken[i] = iConsumesCollector.consumes<edm::View<pat::Jet>>(inputtagSubjet);
+	
+	puMitigationTool = inputCollections[i].getParameter<std::string>("PUMitigationTool");
 	
 	if(systVariations){
 	  edm::InputTag inputtagJESup = inputCollections[i].getParameter<edm::InputTag>("srcJESup");
@@ -128,38 +131,31 @@ FatJetDumper::FatJetDumper(edm::ConsumesCollector&& iConsumesCollector, std::vec
     sdsubjet1_phi  = new std::vector<double>[inputCollections.size()];
     sdsubjet1_mass = new std::vector<double>[inputCollections.size()];
     sdsubjet1_csv  = new std::vector<double>[inputCollections.size()];
+    sdsubjet1_deepcsv  = new std::vector<double>[inputCollections.size()];
     sdsubjet1_axis1= new std::vector<double>[inputCollections.size()];
     sdsubjet1_axis2= new std::vector<double>[inputCollections.size()];
     sdsubjet1_ptD  = new std::vector<double>[inputCollections.size()];
     sdsubjet1_mult = new std::vector<int>[inputCollections.size()];
+    sdsubjet1_tau1 = new std::vector<double>[inputCollections.size()];
+    sdsubjet1_tau2 = new std::vector<double>[inputCollections.size()];
+    sdsubjet1_tau3 = new std::vector<double>[inputCollections.size()];
+    sdsubjet1_tau4 = new std::vector<double>[inputCollections.size()];
     
     sdsubjet2_pt   = new std::vector<double>[inputCollections.size()];
     sdsubjet2_eta  = new std::vector<double>[inputCollections.size()];
     sdsubjet2_phi  = new std::vector<double>[inputCollections.size()];
     sdsubjet2_mass = new std::vector<double>[inputCollections.size()];
     sdsubjet2_csv  = new std::vector<double>[inputCollections.size()];
+    sdsubjet2_deepcsv = new std::vector<double>[inputCollections.size()];
     sdsubjet2_axis1= new std::vector<double>[inputCollections.size()];
     sdsubjet2_axis2= new std::vector<double>[inputCollections.size()];
     sdsubjet2_ptD  = new std::vector<double>[inputCollections.size()];
     sdsubjet2_mult = new std::vector<int>[inputCollections.size()];
-    
-    // 
-    if (fillPuppi){
-      softdropMass_PUPPI   = new std::vector<double>[inputCollections.size()];
-      corrPrunedMass_PUPPI = new std::vector<double>[inputCollections.size()];
-      nSubjets_PUPPI = new std::vector<int>[inputCollections.size()];
-      sdsubjet1_PUPPI_pt  = new std::vector<double>[inputCollections.size()];
-      sdsubjet1_PUPPI_eta = new std::vector<double>[inputCollections.size()];
-      sdsubjet1_PUPPI_phi = new std::vector<double>[inputCollections.size()];
-      sdsubjet1_PUPPI_mass= new std::vector<double>[inputCollections.size()];
-      sdsubjet1_PUPPI_csv = new std::vector<double>[inputCollections.size()];
-      sdsubjet2_PUPPI_pt  = new std::vector<double>[inputCollections.size()];
-      sdsubjet2_PUPPI_eta = new std::vector<double>[inputCollections.size()];
-      sdsubjet2_PUPPI_phi = new std::vector<double>[inputCollections.size()];
-      sdsubjet2_PUPPI_mass= new std::vector<double>[inputCollections.size()];
-      sdsubjet2_PUPPI_csv = new std::vector<double>[inputCollections.size()];
-    }
-    
+    sdsubjet2_tau1 = new std::vector<double>[inputCollections.size()];
+    sdsubjet2_tau2 = new std::vector<double>[inputCollections.size()];
+    sdsubjet2_tau3 = new std::vector<double>[inputCollections.size()];
+    sdsubjet2_tau4 = new std::vector<double>[inputCollections.size()];
+
     if (fillPFCands){
       pfCand_pt = new std::vector<std::vector<double> >[inputCollections.size()];
       pfCand_eta = new std::vector<std::vector<double> >[inputCollections.size()];
@@ -250,15 +246,6 @@ void FatJetDumper::book(TTree* tree){
       branch_name = branch_name.erase(pos_semicolon,1);
       tree->Branch((name+"_"+branch_name).c_str(),&userints[inputCollections.size()*iDiscr+i]);
     }
-    if (fillPuppi){
-      std::vector<std::string> userfloatNames_Puppi = inputCollections[i].getParameter<std::vector<std::string> >("userFloatsPuppi");
-      for(size_t iDiscr = 0; iDiscr < userfloatNames_Puppi.size(); ++iDiscr) {
-	std::string branch_name = userfloatNames_Puppi[iDiscr];
-	size_t pos_semicolon = branch_name.find(":");
-	branch_name = branch_name.erase(pos_semicolon,1);
-	tree->Branch((name+"_"+branch_name).c_str(),&userfloats_Puppi[inputCollections.size()*iDiscr+i]);
-      }
-    }
     
     tree->Branch((name+"_IDloose").c_str(),&jetIDloose[i]);
     tree->Branch((name+"_IDtight").c_str(),&jetIDtight[i]);
@@ -283,20 +270,30 @@ void FatJetDumper::book(TTree* tree){
     tree->Branch((name+"_sdsubjet1_phi").c_str(),  &sdsubjet1_phi[i]);
     tree->Branch((name+"_sdsubjet1_mass").c_str(), &sdsubjet1_mass[i]);
     tree->Branch((name+"_sdsubjet1_csv").c_str(),  &sdsubjet1_csv[i]);
+    tree->Branch((name+"_sdsubjet1_deepcsv").c_str(),  &sdsubjet1_deepcsv[i]);
     tree->Branch((name+"_sdsubjet1_axis1").c_str(),&sdsubjet1_axis1[i]);
     tree->Branch((name+"_sdsubjet1_axis2").c_str(),&sdsubjet1_axis2[i]);
     tree->Branch((name+"_sdsubjet1_ptD").c_str(),  &sdsubjet1_ptD[i]);
     tree->Branch((name+"_sdsubjet1_mult").c_str(), &sdsubjet1_mult[i]);
+    tree->Branch((name+"_sdsubjet1_tau1").c_str(), &sdsubjet1_tau1[i]);
+    tree->Branch((name+"_sdsubjet1_tau2").c_str(), &sdsubjet1_tau1[i]);
+    tree->Branch((name+"_sdsubjet1_tau3").c_str(), &sdsubjet1_tau1[i]);
+    tree->Branch((name+"_sdsubjet1_tau4").c_str(), &sdsubjet1_tau1[i]);
     
     tree->Branch((name+"_sdsubjet2_pt").c_str(),   &sdsubjet2_pt[i]);
     tree->Branch((name+"_sdsubjet2_eta").c_str(),  &sdsubjet2_eta[i]);
     tree->Branch((name+"_sdsubjet2_phi").c_str(),  &sdsubjet2_phi[i]);
     tree->Branch((name+"_sdsubjet2_mass").c_str(), &sdsubjet2_mass[i]);
     tree->Branch((name+"_sdsubjet2_csv").c_str(),  &sdsubjet2_csv[i]);
+    tree->Branch((name+"_sdsubjet2_deepcsv").c_str(),  &sdsubjet2_deepcsv[i]);
     tree->Branch((name+"_sdsubjet2_axis1").c_str(),&sdsubjet2_axis1[i]);
     tree->Branch((name+"_sdsubjet2_axis2").c_str(),&sdsubjet2_axis2[i]);
     tree->Branch((name+"_sdsubjet2_ptD").c_str(),  &sdsubjet2_ptD[i]);
     tree->Branch((name+"_sdsubjet2_mult").c_str(), &sdsubjet2_mult[i]);
+    tree->Branch((name+"_sdsubjet2_tau1").c_str(), &sdsubjet2_tau1[i]);
+    tree->Branch((name+"_sdsubjet2_tau2").c_str(), &sdsubjet2_tau1[i]);
+    tree->Branch((name+"_sdsubjet2_tau3").c_str(), &sdsubjet2_tau1[i]);
+    tree->Branch((name+"_sdsubjet2_tau4").c_str(), &sdsubjet2_tau1[i]);
     
     // PF Candidate variables
     if (fillPFCands){
@@ -339,23 +336,6 @@ void FatJetDumper::book(TTree* tree){
       tree->Branch((name+"_track_sip3dsig").c_str(), &track_sip3dsig[i]);
       tree->Branch((name+"_track_jetdistval").c_str(), &track_jetdistval[i]);
     }
-    
-    if (fillPuppi){
-      tree->Branch((name+"_softdropMass_PUPPI").c_str(), &softdropMass_PUPPI[i]);
-      tree->Branch((name+"_corrPrunedMass_PUPPI").c_str(), &corrPrunedMass_PUPPI[i]);
-      tree->Branch((name+"_nsoftdropSubjets_PUPPI").c_str(), &nSubjets_PUPPI[i]);
-      tree->Branch((name+"_sdsubjet1_PUPPI_pt").c_str(),   &sdsubjet1_PUPPI_pt[i]);
-      tree->Branch((name+"_sdsubjet1_PUPPI_eta").c_str(),  &sdsubjet1_PUPPI_eta[i]);
-      tree->Branch((name+"_sdsubjet1_PUPPI_phi").c_str(),  &sdsubjet1_PUPPI_phi[i]);
-      tree->Branch((name+"_sdsubjet1_PUPPI_mass").c_str(), &sdsubjet1_PUPPI_mass[i]);
-      tree->Branch((name+"_sdsubjet1_PUPPI_csv").c_str(),  &sdsubjet1_PUPPI_csv[i]);
-          
-      tree->Branch((name+"_sdsubjet2_PUPPI_pt").c_str(),   &sdsubjet2_PUPPI_pt[i]);
-      tree->Branch((name+"_sdsubjet2_PUPPI_eta").c_str(),  &sdsubjet2_PUPPI_eta[i]);
-      tree->Branch((name+"_sdsubjet2_PUPPI_phi").c_str(),  &sdsubjet2_PUPPI_phi[i]);
-      tree->Branch((name+"_sdsubjet2_PUPPI_mass").c_str(), &sdsubjet2_PUPPI_mass[i]);
-      tree->Branch((name+"_sdsubjet2_PUPPI_csv").c_str(),  &sdsubjet2_PUPPI_csv[i]);
-    }
   }
 }
 
@@ -387,17 +367,20 @@ bool FatJetDumper::fill(edm::Event& iEvent, const edm::EventSetup& iSetup){
         std::vector<std::string> discriminatorNames   = inputCollections[ic].getParameter<std::vector<std::string> >("discriminators");
 	std::vector<std::string> userfloatNames       = inputCollections[ic].getParameter<std::vector<std::string> >("userFloats");
 	std::vector<std::string> userintNames         = inputCollections[ic].getParameter<std::vector<std::string> >("userInts");
-	std::vector<std::string> userfloatNames_Puppi = inputCollections[ic].getParameter<std::vector<std::string> >("userFloatsPuppi");
-	
+	puMitigationTool = inputCollections[ic].getParameter<std::string>("PUMitigationTool");
+
         edm::Handle<edm::View<pat::Jet>> jetHandle;
         iEvent.getByToken(jetToken[ic], jetHandle);
+	
+	edm::Handle<edm::View<pat::Jet>> subjetHandle;
+	iEvent.getByToken(subjetToken[ic], subjetHandle);
 	
 	if(jetHandle.isValid()){
 	  
 	  for(size_t i=0; i<jetHandle->size(); ++i) {
 	      
 	        const pat::Jet& obj = jetHandle->at(i);
-		
+				
 		pt[ic].push_back(obj.p4().pt());
                 eta[ic].push_back(obj.p4().eta());
                 phi[ic].push_back(obj.p4().phi());
@@ -430,11 +413,6 @@ bool FatJetDumper::fill(edm::Event& iEvent, const edm::EventSetup& iSetup){
 		for(size_t iDiscr = 0; iDiscr < userintNames.size(); ++iDiscr) {
 		  //std::cout << inputCollections[ic].getUntrackedParameter<std::string>("branchname","") << " / " << userintNames[iDiscr] << std::endl;
 		  userints[inputCollections.size()*iDiscr+ic].push_back(obj.userInt(userintNames[iDiscr]));
-		}
-		if (fillPuppi){
-		  for(size_t iDiscr = 0; iDiscr < userfloatNames_Puppi.size(); ++iDiscr) {
-		    userfloats_Puppi[inputCollections.size()*iDiscr+ic].push_back(obj.userFloat(userfloatNames_Puppi[iDiscr]));
-		  }
 		}
 		
 		int genParton = 0;
@@ -697,20 +675,49 @@ bool FatJetDumper::fill(edm::Event& iEvent, const edm::EventSetup& iSetup){
 		//  std::cout<<"caTopTagInfo -> nSubjets="<<nSubs<<std::endl;
 		//}
 		
+		
+		bool isReclustered = false;
+		try{obj.subjets("SoftDrop");}
+		catch(const cms::Exception &e) { isReclustered = true; }
+		
 		std::vector<pat::Jet> sdsubjets; sdsubjets.clear();
-		auto &subjets = obj.subjets("SoftDrop");
-		for (auto const & sj: subjets)
+		
+		if (!isReclustered){
+		  auto &subjets = obj.subjets("SoftDrop");
+		  for (auto const & sj: subjets)
+		    {
+		      sdsubjets.push_back(sj);
+		      //std::vector<std::pair<std::string, float> > btags=(*sj).getPairDiscri();
+		      //for (auto & iBT: btags){
+		      //std::cout<<"first = "<<iBT.first.c_str()<<"   second = "<<iBT.second<<std::endl;
+		    }
+		}
+		else
 		  {
-		    sdsubjets.push_back(sj);
-		    // marina
-		    //std::cout<<" "<<std::endl;
-		    //std::cout<<"SUBJETS BTagging:"<<std::endl;
-		    //std::vector<std::pair<std::string, float> > btags=(*sj).getPairDiscri();
-		    //for (auto & iBT: btags){
-		    //  std::cout<<"first = "<<iBT.first.c_str()<<"   second = "<<iBT.second<<std::endl;
-		    // }
-		    // marina - end
+		    // Reclustered fatjets do not have subjets linked to them. We need to be set them manually
+		    if (subjetHandle.isValid()){
+		      int MatchingSoftDropIndex = -1;
+		      double minDR = 999.9;
+		      for(size_t jj=0; jj<subjetHandle->size(); ++jj){
+			const pat::Jet& sj = subjetHandle->at(jj);
+			// The subjet handle stores the soft-drop AK8 jets, with the actual subjets stored as daughters
+			double dR = reco::deltaR(sj, obj);
+			if (dR < minDR){
+			  minDR = dR;
+			  MatchingSoftDropIndex = jj;
+			}
+		      }
+		      if (minDR < 0.8){
+			// Matching SoftDrop AK8 is 
+			const pat::Jet& sj = subjetHandle->at(MatchingSoftDropIndex);
+			for (size_t ida=0; ida<sj.numberOfDaughters(); ++ida){
+			  auto candPtr= sj.daughterPtr(ida);
+			  sdsubjets.push_back((*edm::Ptr<pat::Jet>(candPtr)));
+			}
+		      }
+		    }
 		  }
+		
 		
 		nSubjets[ic].push_back(sdsubjets.size());
 		if (sdsubjets.size() == 0)
@@ -720,20 +727,30 @@ bool FatJetDumper::fill(edm::Event& iEvent, const edm::EventSetup& iSetup){
 		    sdsubjet1_phi[ic].push_back(-99.9);
 		    sdsubjet1_mass[ic].push_back(-99.9);
 		    sdsubjet1_csv[ic].push_back(-99.9);
+		    sdsubjet1_deepcsv[ic].push_back(-99.9);
 		    sdsubjet1_axis1[ic].push_back(-99.9);
 		    sdsubjet1_axis2[ic].push_back(-99.9);
 		    sdsubjet1_ptD[ic].push_back(-99.9);
 		    sdsubjet1_mult[ic].push_back(-999);
-		    		    
+		    sdsubjet1_tau1[ic].push_back(-99.9);		  
+		    sdsubjet1_tau2[ic].push_back(-99.9);
+		    sdsubjet1_tau3[ic].push_back(-99.9);
+		    sdsubjet1_tau4[ic].push_back(-99.9);
+		    
 		    sdsubjet2_pt[ic].push_back(-99.9);
 		    sdsubjet2_eta[ic].push_back(-99.9);
 		    sdsubjet2_phi[ic].push_back(-99.9);
 		    sdsubjet2_mass[ic].push_back(-99.9);
 		    sdsubjet2_csv[ic].push_back(-99.9);
+		    sdsubjet2_deepcsv[ic].push_back(-99.9);
 		    sdsubjet2_axis1[ic].push_back(-99.9);
 		    sdsubjet2_axis2[ic].push_back(-99.9);
 		    sdsubjet2_ptD[ic].push_back(-99.9);
 		    sdsubjet2_mult[ic].push_back(-999);
+		    sdsubjet2_tau1[ic].push_back(-99.9);		  
+		    sdsubjet2_tau2[ic].push_back(-99.9);
+		    sdsubjet2_tau3[ic].push_back(-99.9);
+		    sdsubjet2_tau4[ic].push_back(-99.9);
 		  }
 		else if (sdsubjets.size() == 1)
 		  {
@@ -747,34 +764,39 @@ bool FatJetDumper::fill(edm::Event& iEvent, const edm::EventSetup& iSetup){
 		    sdsubjet1_eta[ic].push_back( sdsubjets[0].eta());
 		    sdsubjet1_phi[ic].push_back( sdsubjets[0].phi());
 		    sdsubjet1_mass[ic].push_back(sdsubjets[0].mass());
-		    sdsubjet1_csv[ic].push_back( sdsubjets[0].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTagsAK8PFCHSSoftDrop"));
+		    sdsubjet1_csv[ic].push_back( sdsubjets[0].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
+		    sdsubjet1_deepcsv[ic].push_back( sdsubjets[0].bDiscriminator("pfDeepCSVJetTags:probb") + sdsubjets[0].bDiscriminator("pfDeepCSVJetTags:probbb"));
 		    sdsubjet1_axis1[ic].push_back(sj1_axis1);
 		    sdsubjet1_axis2[ic].push_back(sj1_axis2);
 		    sdsubjet1_ptD[ic].push_back(sj1_ptD);
 		    sdsubjet1_mult[ic].push_back(sj1_mult);
-		    
-		    /*
-		      std::cout<<"Subjet 1 CSV blah Packed           = "<<sdsubjets[0].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTagsAK8PFCHSSoftDrop")<<std::endl;
-		      std::cout<<"Subjet 1 DeepCSV probb Packed      = "<<sdsubjets[0].bDiscriminator("pfDeepCSVJetTagsAK8PFCHSSoftDrop:probb")<<std::endl;
-		      std::cout<<"Subjet 1 DeepCSV probbb Packed     = "<<sdsubjets[0].bDiscriminator("pfDeepCSVJetTagsAK8PFCHSSoftDropPacked:probbb")<<std::endl;
-		      std::cout<<"Subjet 1 DeepCSV probc Packed      = "<<sdsubjets[0].bDiscriminator("pfDeepCSVJetTagsAK8PFCHSSoftDropPacked:probc")<<std::endl;
-		      std::cout<<"Subjet 1 CSV            = "<<sdsubjets[0].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags")<<std::endl;
-		      std::cout<<"Subjet 1 DeepCSV probb  = "<<sdsubjets[0].bDiscriminator("pfDeepCSVJetTags:probb")<<std::endl;
-		      std::cout<<"Subjet 1 DeepCSV probbb = "<<sdsubjets[0].bDiscriminator("pfDeepCSVJetTags:probbb")<<std::endl;
-		      std::cout<<"Subjet 1 DeepCSV probc = "<<sdsubjets[0].bDiscriminator("pfDeepCSVJetTags:probc")<<std::endl;
-		      std::cout<<"Subjet 1 DeepCSV probcc = "<<sdsubjets[0].bDiscriminator("pfDeepCSVJetTags:probcc")<<std::endl;
-		      std::cout<<"Subjet 1 DeepCSV probudsg = "<<sdsubjets[0].bDiscriminator("pfDeepCSVJetTags:probudsg")<<std::endl;
-		    */
+		    if (puMitigationTool == "CHS"){
+		      sdsubjet1_tau1[ic].push_back(sdsubjets[0].userFloat("NsubjettinessAK8PFCHSSoftDropSubjets:tau1"));
+		      sdsubjet1_tau2[ic].push_back(sdsubjets[0].userFloat("NsubjettinessAK8PFCHSSoftDropSubjets:tau2"));
+		      sdsubjet1_tau3[ic].push_back(sdsubjets[0].userFloat("NsubjettinessAK8PFCHSSoftDropSubjets:tau3"));
+		      sdsubjet1_tau4[ic].push_back(sdsubjets[0].userFloat("NsubjettinessAK8PFCHSSoftDropSubjets:tau4"));
+		    }
+		    else {
+		      sdsubjet1_tau1[ic].push_back(sdsubjets[0].userFloat("NsubjettinessAK8PFPuppiSoftDropSubjets:tau1"));
+		      sdsubjet1_tau2[ic].push_back(sdsubjets[0].userFloat("NsubjettinessAK8PFPuppiSoftDropSubjets:tau2"));
+		      sdsubjet1_tau3[ic].push_back(sdsubjets[0].userFloat("NsubjettinessAK8PFPuppiSoftDropSubjets:tau3"));
+		      sdsubjet1_tau4[ic].push_back(sdsubjets[0].userFloat("NsubjettinessAK8PFPuppiSoftDropSubjets:tau4"));
+		    }
 		    
 		    sdsubjet2_pt[ic].push_back(-99.9);
 		    sdsubjet2_eta[ic].push_back(-99.9);
 		    sdsubjet2_phi[ic].push_back(-99.9);
 		    sdsubjet2_mass[ic].push_back(-99.9);
 		    sdsubjet2_csv[ic].push_back(-99.9);
+		    sdsubjet2_deepcsv[ic].push_back(-99.9);
 		    sdsubjet2_axis1[ic].push_back(-99.9);
 		    sdsubjet2_axis2[ic].push_back(-99.9);
 		    sdsubjet2_ptD[ic].push_back(-99.9);
 		    sdsubjet2_mult[ic].push_back(-999);
+		    sdsubjet2_tau1[ic].push_back(-99.9);		  
+		    sdsubjet2_tau2[ic].push_back(-99.9);
+		    sdsubjet2_tau3[ic].push_back(-99.9);
+		    sdsubjet2_tau4[ic].push_back(-99.9);
 		  }
 		else if (sdsubjets.size() == 2)
 		  {
@@ -789,127 +811,57 @@ bool FatJetDumper::fill(edm::Event& iEvent, const edm::EventSetup& iSetup){
 		    sdsubjet1_phi[ic].push_back( sdsubjets[0].phi());
 		    sdsubjet1_mass[ic].push_back(sdsubjets[0].mass());
 		    sdsubjet1_csv[ic].push_back( sdsubjets[0].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
+		    sdsubjet1_deepcsv[ic].push_back( sdsubjets[0].bDiscriminator("pfDeepCSVJetTags:probb") + sdsubjets[0].bDiscriminator("pfDeepCSVJetTags:probbb"));
 		    sdsubjet1_axis1[ic].push_back(sj1_axis1);
 		    sdsubjet1_axis2[ic].push_back(sj1_axis2);
 		    sdsubjet1_ptD[ic].push_back(sj1_ptD);
 		    sdsubjet1_mult[ic].push_back(sj1_mult);
+		    if (puMitigationTool == "CHS"){
+		      sdsubjet1_tau1[ic].push_back(sdsubjets[0].userFloat("NsubjettinessAK8PFCHSSoftDropSubjets:tau1"));
+		      sdsubjet1_tau2[ic].push_back(sdsubjets[0].userFloat("NsubjettinessAK8PFCHSSoftDropSubjets:tau2"));
+		      sdsubjet1_tau3[ic].push_back(sdsubjets[0].userFloat("NsubjettinessAK8PFCHSSoftDropSubjets:tau3"));
+		      sdsubjet1_tau4[ic].push_back(sdsubjets[0].userFloat("NsubjettinessAK8PFCHSSoftDropSubjets:tau4"));
+		    }
+		    else {
+		      sdsubjet1_tau1[ic].push_back(sdsubjets[0].userFloat("NsubjettinessAK8PFPuppiSoftDropSubjets:tau1"));
+		      sdsubjet1_tau2[ic].push_back(sdsubjets[0].userFloat("NsubjettinessAK8PFPuppiSoftDropSubjets:tau2"));
+		      sdsubjet1_tau3[ic].push_back(sdsubjets[0].userFloat("NsubjettinessAK8PFPuppiSoftDropSubjets:tau3"));
+		      sdsubjet1_tau4[ic].push_back(sdsubjets[0].userFloat("NsubjettinessAK8PFPuppiSoftDropSubjets:tau4"));
+		    }
 		    
 		    qgTaggingVariables->compute(&(sdsubjets[1]), true);
 		    double sj2_axis1 = qgTaggingVariables->getAxis1();
 		    double sj2_axis2 = qgTaggingVariables->getAxis2();
 		    double sj2_ptD   = qgTaggingVariables->getPtD();
 		    int sj2_mult     = qgTaggingVariables->getMult();
-		    		    
+		    
 		    sdsubjet2_pt[ic].push_back(  sdsubjets[1].pt());
 		    sdsubjet2_eta[ic].push_back( sdsubjets[1].eta());
 		    sdsubjet2_phi[ic].push_back( sdsubjets[1].phi());
 		    sdsubjet2_mass[ic].push_back(sdsubjets[1].mass());
 		    sdsubjet2_csv[ic].push_back( sdsubjets[1].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
+		    sdsubjet2_deepcsv[ic].push_back( sdsubjets[1].bDiscriminator("pfDeepCSVJetTags:probb") + sdsubjets[1].bDiscriminator("pfDeepCSVJetTags:probbb"));
 		    sdsubjet2_axis1[ic].push_back(sj2_axis1);
 		    sdsubjet2_axis2[ic].push_back(sj2_axis2);
 		    sdsubjet2_ptD[ic].push_back(sj2_ptD);
 		    sdsubjet2_mult[ic].push_back(sj2_mult);
-		    /*
-		      std::cout<<"Subjet 1 CSV blah Packed           = "<<sdsubjets[0].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTagsAK8PFCHSSoftDrop")<<std::endl;
-		      std::cout<<"Subjet 1 DeepCSV probb Packed      = "<<sdsubjets[0].bDiscriminator("pfDeepCSVJetTagsAK8PFCHSSoftDrop:probb")<<std::endl;
-		      std::cout<<"Subjet 1 DeepCSV probbb Packed     = "<<sdsubjets[0].bDiscriminator("pfDeepCSVJetTagsAK8PFCHSSoftDropPacked:probbb")<<std::endl;
-		      std::cout<<"Subjet 1 DeepCSV probc Packed      = "<<sdsubjets[0].bDiscriminator("pfDeepCSVJetTagsAK8PFCHSSoftDropPacked:probc")<<std::endl;
-		      std::cout<<"Subjet 1 CSV            = "<<sdsubjets[0].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags")<<std::endl;
-		      std::cout<<"Subjet 1 DeepCSV probb  = "<<sdsubjets[0].bDiscriminator("pfDeepCSVJetTags:probb")<<std::endl;
-		      std::cout<<"Subjet 1 DeepCSV probbb = "<<sdsubjets[0].bDiscriminator("pfDeepCSVJetTags:probbb")<<std::endl;
-		      
-		      std::cout<<"Subjet 2 CSV blah Packed           = "<<sdsubjets[1].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTagsAK8PFCHSSoftDrop")<<std::endl;
-		      std::cout<<"Subjet 2 DeepCSV probb Packed      = "<<sdsubjets[1].bDiscriminator("pfDeepCSVJetTagsAK8PFCHSSoftDrop:probb")<<std::endl;
-		      std::cout<<"Subjet 2 DeepCSV probbb Packed     = "<<sdsubjets[1].bDiscriminator("pfDeepCSVJetTagsAK8PFCHSSoftDropPacked:probbb")<<std::endl;
-		      std::cout<<"Subjet 2 DeepCSV probc Packed      = "<<sdsubjets[1].bDiscriminator("pfDeepCSVJetTagsAK8PFCHSSoftDropPacked:probc")<<std::endl;
-		      std::cout<<"Subjet 2 CSV            = "<<sdsubjets[1].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags")<<std::endl;
-		      std::cout<<"Subjet 2 DeepCSV probb  = "<<sdsubjets[1].bDiscriminator("pfDeepCSVJetTags:probb")<<std::endl;
-		      std::cout<<"Subjet 2 DeepCSV probbb = "<<sdsubjets[1].bDiscriminator("pfDeepCSVJetTags:probbb")<<std::endl;
-		    */
+		    if (puMitigationTool == "CHS"){
+		      sdsubjet2_tau1[ic].push_back(sdsubjets[1].userFloat("NsubjettinessAK8PFCHSSoftDropSubjets:tau1"));
+		      sdsubjet2_tau2[ic].push_back(sdsubjets[1].userFloat("NsubjettinessAK8PFCHSSoftDropSubjets:tau2"));
+		      sdsubjet2_tau3[ic].push_back(sdsubjets[1].userFloat("NsubjettinessAK8PFCHSSoftDropSubjets:tau3"));
+		      sdsubjet2_tau4[ic].push_back(sdsubjets[1].userFloat("NsubjettinessAK8PFCHSSoftDropSubjets:tau4"));
+		    }
+		    else {
+		      sdsubjet2_tau1[ic].push_back(sdsubjets[1].userFloat("NsubjettinessAK8PFPuppiSoftDropSubjets:tau1"));
+		      sdsubjet2_tau2[ic].push_back(sdsubjets[1].userFloat("NsubjettinessAK8PFPuppiSoftDropSubjets:tau2"));
+		      sdsubjet2_tau3[ic].push_back(sdsubjets[1].userFloat("NsubjettinessAK8PFPuppiSoftDropSubjets:tau3"));
+		      sdsubjet2_tau4[ic].push_back(sdsubjets[1].userFloat("NsubjettinessAK8PFPuppiSoftDropSubjets:tau4"));
+		    }
 		  }
 		else {
 		  throw cms::Exception("CorruptData") << "Softdrop subjets not valid! Fat jets can have only 0, 1 or 2 Soft Drop Subjets!";
 		}
-		
-		if (fillPuppi)
-		  {
-		    TLorentzVector puppi_softdrop_p4, puppi_softdrop_subjet_p4;
-		    
-		    std::vector<pat::Jet> sdsubjets_PUPPI; sdsubjets_PUPPI.clear();
-		    auto &subjets_PUPPI = obj.subjets("SoftDropPuppi");
-		    for (auto const & it: subjets_PUPPI)
-		      {
-			puppi_softdrop_subjet_p4.SetPtEtaPhiM(it->correctedP4(0).pt(), it->correctedP4(0).eta(), it->correctedP4(0).phi(), it->correctedP4(0).mass());
-			puppi_softdrop_p4+=puppi_softdrop_subjet_p4;
-			
-			sdsubjets_PUPPI.push_back(it);
-		      }
-		    softdropMass_PUPPI[ic].push_back(puppi_softdrop_p4.M());
-		    
-		    // L2L3 Corrected Jet only for the pruned mass correction
-		    /*
-		      double puppi_corr = 0.0;
-		      FactorizedJetCorrector *jecAK8PUPPI_ = ( iEvent.isRealData() ) ? dataJEC_PUPPI : mcJEC_PUPPI;
-		      jecAK8PUPPI_ -> setJetEta ( puppi_softdrop_p4.Eta());
-		      jecAK8PUPPI_ -> setJetPt  ( puppi_softdrop_p4.Pt());
-		      jecAK8PUPPI_ -> setJetE   ( puppi_softdrop_p4.Energy());
-		      jecAK8PUPPI_ -> setJetA   ( obj.jetArea() );
-		      jecAK8PUPPI_ -> setRho    ( *rho_handle );
-		      jecAK8PUPPI_ -> setNPV    ( vertex_handle->size() );
-		      puppi_corr = jecAK8PUPPI_->getCorrection();
-		      
-		      corrPrunedMass_PUPPI[ic].push_back(puppi_corr * puppi_softdrop_p4.M());
-		    */
-		    
-		    nSubjets_PUPPI[ic].push_back(sdsubjets_PUPPI.size());
-		    
-		    if (sdsubjets_PUPPI.size() == 0)
-		      {
-			sdsubjet1_PUPPI_pt[ic].push_back(-99.9);
-			sdsubjet1_PUPPI_eta[ic].push_back(-99.9);
-			sdsubjet1_PUPPI_phi[ic].push_back(-99.9);
-			sdsubjet1_PUPPI_mass[ic].push_back(-99.9);
-			sdsubjet1_PUPPI_csv[ic].push_back(-99.9);
-			
-			sdsubjet2_PUPPI_pt[ic].push_back(-99.9);
-			sdsubjet2_PUPPI_eta[ic].push_back(-99.9);
-			sdsubjet2_PUPPI_phi[ic].push_back(-99.9);
-			sdsubjet2_PUPPI_mass[ic].push_back(-99.9);
-			sdsubjet2_PUPPI_csv[ic].push_back(-99.9);
-		      }
-		    else if (sdsubjets_PUPPI.size() == 1)
-		      {
-			sdsubjet1_PUPPI_pt[ic].push_back(  sdsubjets_PUPPI[0].pt());
-			sdsubjet1_PUPPI_eta[ic].push_back( sdsubjets_PUPPI[0].eta());
-			sdsubjet1_PUPPI_phi[ic].push_back( sdsubjets_PUPPI[0].phi());
-			sdsubjet1_PUPPI_mass[ic].push_back(sdsubjets_PUPPI[0].mass());
-			sdsubjet1_PUPPI_csv[ic].push_back( sdsubjets_PUPPI[0].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
-			
-			sdsubjet2_PUPPI_pt[ic].push_back(-99.9);
-			sdsubjet2_PUPPI_eta[ic].push_back(-99.9);
-			sdsubjet2_PUPPI_phi[ic].push_back(-99.9);
-			sdsubjet2_PUPPI_mass[ic].push_back(-99.9);
-			sdsubjet2_PUPPI_csv[ic].push_back(-99.9);
-		      }
-		    else if (sdsubjets_PUPPI.size() == 2)
-		      {
-			sdsubjet1_PUPPI_pt[ic].push_back(  sdsubjets_PUPPI[0].pt());
-			sdsubjet1_PUPPI_eta[ic].push_back( sdsubjets_PUPPI[0].eta());
-			sdsubjet1_PUPPI_phi[ic].push_back( sdsubjets_PUPPI[0].phi());
-			sdsubjet1_PUPPI_mass[ic].push_back(sdsubjets_PUPPI[0].mass());
-			sdsubjet1_PUPPI_csv[ic].push_back( sdsubjets_PUPPI[0].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
-			
-			sdsubjet2_PUPPI_pt[ic].push_back(  sdsubjets_PUPPI[1].pt());
-			sdsubjet2_PUPPI_eta[ic].push_back( sdsubjets_PUPPI[1].eta());
-			sdsubjet2_PUPPI_phi[ic].push_back( sdsubjets_PUPPI[1].phi());
-			sdsubjet2_PUPPI_mass[ic].push_back(sdsubjets_PUPPI[1].mass());
-			sdsubjet2_PUPPI_csv[ic].push_back( sdsubjets_PUPPI[1].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
-		      }
-		    else {
-		      throw cms::Exception("CorruptData") << "PUPPI Softdrop subjets not valid! Fat jets can have only 0, 1 or 2 Soft Drop Subjets!";
-		    }
-		  } // Fill Puppi
-	    }
+	  }
         }
     }
     return filter();
@@ -953,20 +905,30 @@ void FatJetDumper::reset(){
 	sdsubjet1_phi[ic].clear();
 	sdsubjet1_mass[ic].clear();
 	sdsubjet1_csv[ic].clear();
+	sdsubjet1_deepcsv[ic].clear();
 	sdsubjet1_axis1[ic].clear();
 	sdsubjet1_axis2[ic].clear();
 	sdsubjet1_ptD[ic].clear();
 	sdsubjet1_mult[ic].clear();
-		
+	sdsubjet1_tau1[ic].clear();
+	sdsubjet1_tau2[ic].clear();
+	sdsubjet1_tau3[ic].clear();
+	sdsubjet1_tau4[ic].clear();
+	
 	sdsubjet2_pt[ic].clear();
 	sdsubjet2_eta[ic].clear();
 	sdsubjet2_phi[ic].clear();
 	sdsubjet2_mass[ic].clear();
 	sdsubjet2_csv[ic].clear();
+	sdsubjet2_deepcsv[ic].clear();
 	sdsubjet2_axis1[ic].clear();
 	sdsubjet2_axis2[ic].clear();
 	sdsubjet2_ptD[ic].clear();
 	sdsubjet2_mult[ic].clear();
+	sdsubjet2_tau1[ic].clear();
+	sdsubjet2_tau2[ic].clear();
+	sdsubjet2_tau3[ic].clear();
+	sdsubjet2_tau4[ic].clear();
 	
 	if (fillPFCands)
           {
@@ -1009,24 +971,6 @@ void FatJetDumper::reset(){
             track_sip3dsig[ic].clear();
             track_jetdistval[ic].clear();
           }
-	
-	//
-	if (fillPuppi){
-	  softdropMass_PUPPI[ic].clear();
-	  corrPrunedMass_PUPPI[ic].clear();
-	  nSubjets_PUPPI[ic].clear();
-	  sdsubjet1_PUPPI_pt[ic].clear();
-	  sdsubjet1_PUPPI_eta[ic].clear();
-	  sdsubjet1_PUPPI_phi[ic].clear();
-	  sdsubjet1_PUPPI_mass[ic].clear();
-	  sdsubjet1_PUPPI_csv[ic].clear();
-	  
-	  sdsubjet2_PUPPI_pt[ic].clear();
-	  sdsubjet2_PUPPI_eta[ic].clear();
-	  sdsubjet2_PUPPI_phi[ic].clear();
-	  sdsubjet2_PUPPI_mass[ic].clear();
-	  sdsubjet2_PUPPI_csv[ic].clear();
-	}
     }
     for(size_t ic = 0; ic < inputCollections.size()*nDiscriminators; ++ic){
         discriminators[ic].clear();
@@ -1036,9 +980,6 @@ void FatJetDumper::reset(){
     }
     for(size_t ic = 0; ic < inputCollections.size()*nUserints; ++ic){
       userints[ic].clear();
-    }
-    for(size_t ic = 0; ic < inputCollections.size()*nUserfloats_Puppi; ++ic){
-      userfloats_Puppi[ic].clear();
     }
 }
 
