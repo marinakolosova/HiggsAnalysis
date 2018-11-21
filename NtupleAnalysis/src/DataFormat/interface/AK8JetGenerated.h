@@ -22,7 +22,7 @@ public:
   void setupBranches(BranchManager& mgr);
 
   std::vector<std::string> getBJetTagsDiscriminatorNames() const {
-    static std::vector<std::string> n = { std::string("pfBoostedDoubleSecondaryVertexAK8BJetTags"), std::string("pfCombinedCvsBJetTags"), std::string("pfCombinedInclusiveSecondaryVertexV2BJetTags")};
+    static std::vector<std::string> n = { std::string("pfBoostedDoubleSecondaryVertexAK8BJetTags"), std::string("pfCombinedCvsBJetTags"), std::string("pfCombinedCvsLJetTags"), std::string("pfCombinedInclusiveSecondaryVertexV2BJetTags"), std::string("pfDeepCSVJetTagsprobb"), std::string("pfDeepCSVJetTagsprobbb"), std::string("pfDeepCSVJetTagsprobc"), std::string("pfDeepCSVJetTagsprobudsg")};
     return n;
   }
   std::vector<std::string> getPUIDDiscriminatorNames() const {
@@ -104,7 +104,12 @@ public:
     static std::vector<std::function<bool()>> values = {
       [&](){ return this->pfBoostedDoubleSecondaryVertexAK8BJetTags(); },
       [&](){ return this->pfCombinedCvsBJetTags(); },
-      [&](){ return this->pfCombinedInclusiveSecondaryVertexV2BJetTags(); }
+      [&](){ return this->pfCombinedCvsLJetTags(); },
+      [&](){ return this->pfCombinedInclusiveSecondaryVertexV2BJetTags(); },
+      [&](){ return this->pfDeepCSVJetTagsprobb(); },
+      [&](){ return this->pfDeepCSVJetTagsprobbb(); },
+      [&](){ return this->pfDeepCSVJetTagsprobc(); },
+      [&](){ return this->pfDeepCSVJetTagsprobudsg(); }
     };
     return values;
   }
@@ -136,12 +141,12 @@ public:
   double NjettinessAK8Puppitau1() const { return this->fCollection->fNjettinessAK8Puppitau1->value()[this->index()]; }
   double NjettinessAK8Puppitau2() const { return this->fCollection->fNjettinessAK8Puppitau2->value()[this->index()]; }
   double NjettinessAK8Puppitau3() const { return this->fCollection->fNjettinessAK8Puppitau3->value()[this->index()]; }
-  double NjettinessAK8CHSTau1() const { return this->fCollection->fAk8PFJetsCHSValueMapNjettinessAK8CHSTau1->value()[this->index()]; }
-  double NjettinessAK8CHSTau2() const { return this->fCollection->fAk8PFJetsCHSValueMapNjettinessAK8CHSTau2->value()[this->index()]; }
-  double NjettinessAK8CHSTau3() const { return this->fCollection->fAk8PFJetsCHSValueMapNjettinessAK8CHSTau3->value()[this->index()]; }
-  double PrunedMass() const { return this->fCollection->fAk8PFJetsCHSValueMapak8PFJetsCHSPrunedMass->value()[this->index()]; }
-  double SoftDropMass() const { return this->fCollection->fAk8PFJetsCHSValueMapak8PFJetsCHSSoftDropMass->value()[this->index()]; }
-  double PuppiSoftDropMass() const { return this->fCollection->fAk8PFJetsPuppiSoftDropMass->value()[this->index()]; }
+  double ak8PFJetsCHSValueMapNjettinessAK8CHSTau1() const { return this->fCollection->fAk8PFJetsCHSValueMapNjettinessAK8CHSTau1->value()[this->index()]; }
+  double ak8PFJetsCHSValueMapNjettinessAK8CHSTau2() const { return this->fCollection->fAk8PFJetsCHSValueMapNjettinessAK8CHSTau2->value()[this->index()]; }
+  double ak8PFJetsCHSValueMapNjettinessAK8CHSTau3() const { return this->fCollection->fAk8PFJetsCHSValueMapNjettinessAK8CHSTau3->value()[this->index()]; }
+  double ak8PFJetsCHSValueMapak8PFJetsCHSPrunedMass() const { return this->fCollection->fAk8PFJetsCHSValueMapak8PFJetsCHSPrunedMass->value()[this->index()]; }
+  double ak8PFJetsCHSValueMapak8PFJetsCHSSoftDropMass() const { return this->fCollection->fAk8PFJetsCHSValueMapak8PFJetsCHSSoftDropMass->value()[this->index()]; }
+  double ak8PFJetsPuppiSoftDropMass() const { return this->fCollection->fAk8PFJetsPuppiSoftDropMass->value()[this->index()]; }
   double corrPrunedMass() const { return this->fCollection->fCorrPrunedMass->value()[this->index()]; }
   double sdsubjet1_axis1() const { return this->fCollection->fSdsubjet1_axis1->value()[this->index()]; }
   double sdsubjet1_axis2() const { return this->fCollection->fSdsubjet1_axis2->value()[this->index()]; }

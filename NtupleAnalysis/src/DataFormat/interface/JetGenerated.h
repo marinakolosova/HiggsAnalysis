@@ -22,7 +22,7 @@ public:
   void setupBranches(BranchManager& mgr);
 
   std::vector<std::string> getBJetTagsDiscriminatorNames() const {
-    static std::vector<std::string> n = { std::string("pfCombinedCvsBJetTags"), std::string("pfCombinedInclusiveSecondaryVertexV2BJetTags"), std::string("pfCombinedMVAV2BJetTags"), std::string("pfCombinedSecondaryVertexV2BJetTags"), std::string("pfJetBProbabilityBJetTags"), std::string("pfJetProbabilityBJetTags"), std::string("pfSimpleInclusiveSecondaryVertexHighEffBJetTags"), std::string("pfSimpleSecondaryVertexHighEffBJetTags"), std::string("pfTrackCountingHighEffBJetTags"), std::string("softPFElectronBJetTags"), std::string("softPFMuonBJetTags")};
+    static std::vector<std::string> n = { std::string("pfCombinedCvsBJetTags"), std::string("pfCombinedCvsLJetTags"), std::string("pfCombinedInclusiveSecondaryVertexV2BJetTags"), std::string("pfCombinedMVAV2BJetTags"), std::string("pfCombinedSecondaryVertexV2BJetTags"), std::string("pfDeepCSVJetTagsprobb"), std::string("pfDeepCSVJetTagsprobbb"), std::string("pfDeepCSVJetTagsprobc"), std::string("pfDeepCSVJetTagsprobudsg"), std::string("pfJetBProbabilityBJetTags"), std::string("pfJetProbabilityBJetTags"), std::string("pfSimpleInclusiveSecondaryVertexHighEffBJetTags"), std::string("pfSimpleSecondaryVertexHighEffBJetTags"), std::string("pfTrackCountingHighEffBJetTags"), std::string("softPFElectronBJetTags"), std::string("softPFMuonBJetTags")};
     return n;
   }
   std::vector<std::string> getPUIDDiscriminatorNames() const {
@@ -92,9 +92,14 @@ public:
   std::vector<std::function<bool()>> getBJetTagsDiscriminatorValues() const {
     static std::vector<std::function<bool()>> values = {
       [&](){ return this->pfCombinedCvsBJetTags(); },
+      [&](){ return this->pfCombinedCvsLJetTags(); },
       [&](){ return this->pfCombinedInclusiveSecondaryVertexV2BJetTags(); },
       [&](){ return this->pfCombinedMVAV2BJetTags(); },
       [&](){ return this->pfCombinedSecondaryVertexV2BJetTags(); },
+      [&](){ return this->pfDeepCSVJetTagsprobb(); },
+      [&](){ return this->pfDeepCSVJetTagsprobbb(); },
+      [&](){ return this->pfDeepCSVJetTagsprobc(); },
+      [&](){ return this->pfDeepCSVJetTagsprobudsg(); },
       [&](){ return this->pfJetBProbabilityBJetTags(); },
       [&](){ return this->pfJetProbabilityBJetTags(); },
       [&](){ return this->pfSimpleInclusiveSecondaryVertexHighEffBJetTags(); },
