@@ -352,12 +352,12 @@ void TestFatJets::process(Long64_t entry) {
       double eta= jet.eta();
       double phi= jet.phi();			
       double e  = jet.e();
-      double mass_pruned = jet.PrunedMass();
+      double mass_pruned = jet.ak8PFJetsCHSValueMapak8PFJetsCHSPrunedMass();
       double mass_prunedCorr = jet.corrPrunedMass();
-      double mass_sd = jet.SoftDropMass();
-      double tau1 = jet.NjettinessAK8CHSTau1();
-      double tau2 = jet.NjettinessAK8CHSTau2();
-      double tau3 = jet.NjettinessAK8CHSTau3();
+      double mass_sd = jet.ak8PFJetsCHSValueMapak8PFJetsCHSSoftDropMass();
+      double tau1 = jet.ak8PFJetsCHSValueMapNjettinessAK8CHSTau1();
+      double tau2 = jet.ak8PFJetsCHSValueMapNjettinessAK8CHSTau2();
+      double tau3 = jet.ak8PFJetsCHSValueMapNjettinessAK8CHSTau3();
       
       bool IDloose = jet.IDloose();
       
