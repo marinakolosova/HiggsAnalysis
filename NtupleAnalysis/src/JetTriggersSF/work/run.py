@@ -1,16 +1,5 @@
 #!/usr/bin/env python
 '''
-INSTRUCTIONS:
-The required minimum input is a multiCRAB directory with at least one dataset. If successfull
-a pseudo multiCRAB with name "analysis_YYMMDD_HHMMSS/" will be created, inside which each
-dataset has its own directory with the results (ROOT files with histograms). These can be later
-used as input to plotting scripts to get the desired results.
-
-
-PROOF:
-Enable only if your analysis is CPU-limited (e.g. limit calculation) With one analyzer at
-a time most probably you are I/O -limited. The limit is how much memory one process is using.
-
 
 USAGE:
 ./run.py -m <multicrab_directory> -j <numOfCores> -i <DatasetName>
@@ -18,31 +7,7 @@ or
 ./run.py -m <multicrab_directory> -n 10 -e "Keyword1|Keyword2|Keyword3"
 
 Example:
-./run.py -m /multicrab_CMSSW752_Default_07Jan2016/
-./run.py -m multicrab_CMSSW752_Default_07Jan2016/ -j 16
-./run.py -m multicrab_Hplus2tbAnalysis_v8014_20160818T1956 -n 1000 -e QCD
-./run.py -m <multicrab-directory> -e TT_extOB
-./run.py -m <multicrab_directory> -n 10 -e "QCD_bEnriched_HT300|2016|ST_"
-
-ROOT:
-The available ROOT options for the Error-Ignore-Level are (const Int_t):
-        kUnset    =  -1
-        kPrint    =   0
-        kInfo     =   1000
-        kWarning  =   2000
-        kError    =   3000
-        kBreak    =   4000
-
-HistoLevel:
-For the histogramAmbientLevel each DEEPER level is a SUBSET of the rest. 
-For example "kDebug" will include all kDebug histos but also kInformative, kVital, kSystematics, and kNever.  
-Setting histogramAmbientLevel=kSystematics will include kSystematics AND kNever.
-    1. kNever = 0,
-    2. kSystematics,
-    3. kVital,
-    4. kInformative,
-    5. kDebug,
-    6. kNumberOfLevels
+./run.py -m /uscms_data/d3/skonstan/workspace/CMSSW_9_4_9/src/HiggsAnalysis/MiniAOD2TTree/test/multicrab_JetTriggers_v949_20181109T1540 -i "TT" --noPU --verbose --noTopPt
 '''
 
 #================================================================================================
@@ -62,7 +27,7 @@ import ROOT
 #================================================================================================
 prefix      = "JetTriggersSF"
 postfix     = ""
-dataEras    = ["2016"]
+dataEras    = ["2017"]
 searchModes = ["80to1000"]
 
 ROOT.gErrorIgnoreLevel = 0 
@@ -169,7 +134,9 @@ def main():
                               searchModes,
                               usePUreweighting       = opts.usePUreweighting,
                               useTopPtReweighting    = opts.useTopPtReweighting,
-                              doSystematicVariations = opts.doSystematics)
+                              doSystematicVariations = opts.doSystematics,
+                              analysisType="HToTB",
+                              )
 
     # Perform variations (e.g. for optimisation)
     # builder.addVariation("METSelection.METCutValue", [100,120,140])

@@ -248,7 +248,8 @@ def _setupBtagSFDatabase(btagPset, btagPayloadFilename, direction, variationInfo
     rows = []
     validAlgoHeaderPairs = {
       "pfCombinedInclusiveSecondaryVertexV2BJetTags": "CSVv2",
-      "pfCombinedMVAV2BJetTags": "cMVAv2"
+      "pfCombinedMVAV2BJetTags": "cMVAv2",
+      "pfDeepCSVBJetTags": "DeepCSV"
     }
     if not btagPset.__getattr__("bjetDiscr") in validAlgoHeaderPairs.keys():
         raise Exception("Error: No valid payload header ID has been specified for btag algo %s"%btagPset.__getattr__("bjetDiscr"))

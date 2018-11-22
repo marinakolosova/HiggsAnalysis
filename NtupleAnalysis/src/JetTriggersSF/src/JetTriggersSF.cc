@@ -26,9 +26,6 @@ public:
 		double phi1, double phi2);
     
 private:
-  // Input parameters
-  const DirectionalCut<double> cfg_PrelimTopMVACut;
-  
   // Common plots
   CommonPlots fCommonPlots;
   
@@ -44,14 +41,18 @@ private:
   BJetSelection fBJetSelection;
   Count cBTaggingSFCounter;
   METSelection fMETSelection;
-  QuarkGluonLikelihoodRatio fQGLRSelection;
   TopSelectionBDT fTopSelection;
-  FatJetSelection fFatJetSelection;
   Count cSelected;
-  Count cTrigger_1BTag;
-  Count cTrigger_2BTag;
-  Count cTrigger_OR;
-  Count cTrigger_OR_PFJet450;
+  
+  Count cTrigger_1BTagCSV;     // (HLT_PFHT430_SixJet40_BTagCSV_p080 || HLT_PFHT430_SixPFJet40_PFBTagCSV_1p5)
+  Count cTrigger_2BTagCSV;     // (HLT_PFHT380_SixPFJet32_DoublePFBTagCSV_2p2 || HLT_PFHT380_SixJet32_DoubleBTagCSV_p075) 
+  Count cTrigger_2BTagDeepCSV; // (HLT_PFHT380_SixPFJet32_DoublePFBTagDeepCSV_2p2)
+  Count cTrigger_3BTagCSV;     // (HLT_PFHT300PT30_QuadPFJet_75_60_45_40_TriplePFBTagCSV_3p0 || HLT_HT300PT30_QuadJet_75_60_45_40_TripeCSV_p07)
+  Count cTrigger_OR;           //  OR of all the above triggers (without DoubleDeepCSV)
+  Count cTrigger_ORwDeepCSV;   //  OR of all the above triggers (with DoubleDeepCSV)
+  Count cTrigger_OR_PFJet500;  // (All the above || HLT_PFJet500)
+  Count cTrigger_OR_PFHT1050;  // (All the above || HLT_PFHT1050)
+  Count cTrigger_OR_All;       // (All the above || HLT_PFJet500 || HLT_PFHT1050)
   
   // Histogram Settings
   const HistogramSettings cfg_PtBinSetting;
@@ -59,9 +60,19 @@ private:
     
   // Strings to store trigger names
   std::string TriggerName;
-
+  std::string SingleBTagCSV_v1;
+  std::string SingleBTagCSV_v2;
+  std::string DoubleBTagCSV_v1;
+  std::string DoubleBTagCSV_v2;
+  std::string TripleBTagCSV_v1;
+  std::string TripleBTagCSV_v2;
+  std::string DoubleBTagDeepCSV;
+  std::string PFJet500;
+  std::string PFHT1050;
+  
   //Histograms 
   WrappedTH1* hdRminJetM;
+  
   //---------------------------------------------------------------------
   //   Denominators  
   //---------------------------------------------------------------------
@@ -73,68 +84,129 @@ private:
   WrappedTH1* hDen_pu_RefTrg_OfflineSel;
   WrappedTH1* hDen_nBTagJets_RefTrg_OfflineSel;
   WrappedTH1* hDen_CSV_RefTrg_OfflineSel;
+  WrappedTH1* hDen_DeepCSV_RefTrg_OfflineSel;
   WrappedTH1* hDen_JetMulti_RefTrg_OfflineSel;
   WrappedTH1* hDen_BJetMulti_RefTrg_OfflineSel;
   //---------------------------------------------------------------------
-
+  
   //---------------------------------------------------------------------  
   // Numerators, 1-BTag, 2-BTag, OR, OR+Jet450
   //---------------------------------------------------------------------
   // 6th jet pt
-  WrappedTH1* hNum_pt6thJet_RefTrg_OfflineSel_Signal1BTag;
-  WrappedTH1* hNum_pt6thJet_RefTrg_OfflineSel_Signal2BTag;
+  WrappedTH1* hNum_pt6thJet_RefTrg_OfflineSel_Signal1BTagCSV;
+  WrappedTH1* hNum_pt6thJet_RefTrg_OfflineSel_Signal2BTagCSV;
+  WrappedTH1* hNum_pt6thJet_RefTrg_OfflineSel_Signal2BTagDeepCSV;
+  WrappedTH1* hNum_pt6thJet_RefTrg_OfflineSel_Signal3BTagCSV;
   WrappedTH1* hNum_pt6thJet_RefTrg_OfflineSel_SignalOR;
-  WrappedTH1* hNum_pt6thJet_RefTrg_OfflineSel_SignalOR_PFJet450;
-
+  WrappedTH1* hNum_pt6thJet_RefTrg_OfflineSel_SignalORwDeepCSV;
+  WrappedTH1* hNum_pt6thJet_RefTrg_OfflineSel_SignalOR_PFJet500;
+  WrappedTH1* hNum_pt6thJet_RefTrg_OfflineSel_SignalOR_PFHT1050;
+  WrappedTH1* hNum_pt6thJet_RefTrg_OfflineSel_SignalOR_All;
+  
   // 6th jet eta
-  WrappedTH1* hNum_eta6thJet_RefTrg_OfflineSel_Signal1BTag;
-  WrappedTH1* hNum_eta6thJet_RefTrg_OfflineSel_Signal2BTag;
+  WrappedTH1* hNum_eta6thJet_RefTrg_OfflineSel_Signal1BTagCSV;
+  WrappedTH1* hNum_eta6thJet_RefTrg_OfflineSel_Signal2BTagCSV;
+  WrappedTH1* hNum_eta6thJet_RefTrg_OfflineSel_Signal2BTagDeepCSV;
+  WrappedTH1* hNum_eta6thJet_RefTrg_OfflineSel_Signal3BTagCSV;
   WrappedTH1* hNum_eta6thJet_RefTrg_OfflineSel_SignalOR;
-  WrappedTH1* hNum_eta6thJet_RefTrg_OfflineSel_SignalOR_PFJet450;
-
+  WrappedTH1* hNum_eta6thJet_RefTrg_OfflineSel_SignalORwDeepCSV;
+  WrappedTH1* hNum_eta6thJet_RefTrg_OfflineSel_SignalOR_PFJet500;
+  WrappedTH1* hNum_eta6thJet_RefTrg_OfflineSel_SignalOR_PFHT1050;
+  WrappedTH1* hNum_eta6thJet_RefTrg_OfflineSel_SignalOR_All;
+  
   // 6th jet phi
-  WrappedTH1* hNum_phi6thJet_RefTrg_OfflineSel_Signal1BTag;
-  WrappedTH1* hNum_phi6thJet_RefTrg_OfflineSel_Signal2BTag;
+  WrappedTH1* hNum_phi6thJet_RefTrg_OfflineSel_Signal1BTagCSV;
+  WrappedTH1* hNum_phi6thJet_RefTrg_OfflineSel_Signal2BTagCSV;
+  WrappedTH1* hNum_phi6thJet_RefTrg_OfflineSel_Signal2BTagDeepCSV;
+  WrappedTH1* hNum_phi6thJet_RefTrg_OfflineSel_Signal3BTagCSV;
   WrappedTH1* hNum_phi6thJet_RefTrg_OfflineSel_SignalOR;
-  WrappedTH1* hNum_phi6thJet_RefTrg_OfflineSel_SignalOR_PFJet450;
-
+  WrappedTH1* hNum_phi6thJet_RefTrg_OfflineSel_SignalORwDeepCSV;
+  WrappedTH1* hNum_phi6thJet_RefTrg_OfflineSel_SignalOR_PFJet500;
+  WrappedTH1* hNum_phi6thJet_RefTrg_OfflineSel_SignalOR_PFHT1050;
+  WrappedTH1* hNum_phi6thJet_RefTrg_OfflineSel_SignalOR_All;
+  
   //Ht
-  WrappedTH1* hNum_Ht_RefTrg_OfflineSel_Signal1BTag;
-  WrappedTH1* hNum_Ht_RefTrg_OfflineSel_Signal2BTag;
+  WrappedTH1* hNum_Ht_RefTrg_OfflineSel_Signal1BTagCSV;
+  WrappedTH1* hNum_Ht_RefTrg_OfflineSel_Signal2BTagCSV;
+  WrappedTH1* hNum_Ht_RefTrg_OfflineSel_Signal2BTagDeepCSV;
+  WrappedTH1* hNum_Ht_RefTrg_OfflineSel_Signal3BTagCSV;
   WrappedTH1* hNum_Ht_RefTrg_OfflineSel_SignalOR;
-  WrappedTH1* hNum_Ht_RefTrg_OfflineSel_SignalOR_PFJet450;
-
+  WrappedTH1* hNum_Ht_RefTrg_OfflineSel_SignalORwDeepCSV;
+  WrappedTH1* hNum_Ht_RefTrg_OfflineSel_SignalOR_PFJet500;
+  WrappedTH1* hNum_Ht_RefTrg_OfflineSel_SignalOR_PFHT1050;
+  WrappedTH1* hNum_Ht_RefTrg_OfflineSel_SignalOR_All;
+  
   //PU
-  WrappedTH1* hNum_pu_RefTrg_OfflineSel_Signal1BTag;
-  WrappedTH1* hNum_pu_RefTrg_OfflineSel_Signal2BTag;
+  WrappedTH1* hNum_pu_RefTrg_OfflineSel_Signal1BTagCSV;
+  WrappedTH1* hNum_pu_RefTrg_OfflineSel_Signal2BTagCSV;
+  WrappedTH1* hNum_pu_RefTrg_OfflineSel_Signal2BTagDeepCSV;
+  WrappedTH1* hNum_pu_RefTrg_OfflineSel_Signal3BTagCSV;
   WrappedTH1* hNum_pu_RefTrg_OfflineSel_SignalOR;
-  WrappedTH1* hNum_pu_RefTrg_OfflineSel_SignalOR_PFJet450;
-
+  WrappedTH1* hNum_pu_RefTrg_OfflineSel_SignalORwDeepCSV;
+  WrappedTH1* hNum_pu_RefTrg_OfflineSel_SignalOR_PFJet500;
+  WrappedTH1* hNum_pu_RefTrg_OfflineSel_SignalOR_PFHT1050;
+  WrappedTH1* hNum_pu_RefTrg_OfflineSel_SignalOR_All;
+  
   //B-Jet Multi
-  WrappedTH1* hNum_nBTagJets_RefTrg_OfflineSel_Signal1BTag;
-  WrappedTH1* hNum_nBTagJets_RefTrg_OfflineSel_Signal2BTag;
+  WrappedTH1* hNum_nBTagJets_RefTrg_OfflineSel_Signal1BTagCSV;
+  WrappedTH1* hNum_nBTagJets_RefTrg_OfflineSel_Signal2BTagCSV;
+  WrappedTH1* hNum_nBTagJets_RefTrg_OfflineSel_Signal2BTagDeepCSV;
+  WrappedTH1* hNum_nBTagJets_RefTrg_OfflineSel_Signal3BTagCSV;
   WrappedTH1* hNum_nBTagJets_RefTrg_OfflineSel_SignalOR;
-  WrappedTH1* hNum_nBTagJets_RefTrg_OfflineSel_SignalOR_PFJet450;
-
+  WrappedTH1* hNum_nBTagJets_RefTrg_OfflineSel_SignalORwDeepCSV;
+  WrappedTH1* hNum_nBTagJets_RefTrg_OfflineSel_SignalOR_PFJet500;
+  WrappedTH1* hNum_nBTagJets_RefTrg_OfflineSel_SignalOR_PFHT1050;
+  WrappedTH1* hNum_nBTagJets_RefTrg_OfflineSel_SignalOR_All;
+  
   //Jet CSV
-  WrappedTH1* hNum_CSV_RefTrg_OfflineSel_Signal1BTag;
-  WrappedTH1* hNum_CSV_RefTrg_OfflineSel_Signal2BTag;
+  WrappedTH1* hNum_CSV_RefTrg_OfflineSel_Signal1BTagCSV;
+  WrappedTH1* hNum_CSV_RefTrg_OfflineSel_Signal2BTagCSV;
+  WrappedTH1* hNum_CSV_RefTrg_OfflineSel_Signal2BTagDeepCSV;
+  WrappedTH1* hNum_CSV_RefTrg_OfflineSel_Signal3BTagCSV;
   WrappedTH1* hNum_CSV_RefTrg_OfflineSel_SignalOR;
-  WrappedTH1* hNum_CSV_RefTrg_OfflineSel_SignalOR_PFJet450;
-
+  WrappedTH1* hNum_CSV_RefTrg_OfflineSel_SignalORwDeepCSV;
+  WrappedTH1* hNum_CSV_RefTrg_OfflineSel_SignalOR_PFJet500;
+  WrappedTH1* hNum_CSV_RefTrg_OfflineSel_SignalOR_PFHT1050;
+  WrappedTH1* hNum_CSV_RefTrg_OfflineSel_SignalOR_All;
+  
+  //Jet Deep CSV
+  WrappedTH1* hNum_DeepCSV_RefTrg_OfflineSel_Signal1BTagCSV;
+  WrappedTH1* hNum_DeepCSV_RefTrg_OfflineSel_Signal2BTagCSV;
+  WrappedTH1* hNum_DeepCSV_RefTrg_OfflineSel_Signal2BTagDeepCSV;
+  WrappedTH1* hNum_DeepCSV_RefTrg_OfflineSel_Signal3BTagCSV;
+  WrappedTH1* hNum_DeepCSV_RefTrg_OfflineSel_SignalOR;
+  WrappedTH1* hNum_DeepCSV_RefTrg_OfflineSel_SignalORwDeepCSV;
+  WrappedTH1* hNum_DeepCSV_RefTrg_OfflineSel_SignalOR_PFJet500;
+  WrappedTH1* hNum_DeepCSV_RefTrg_OfflineSel_SignalOR_PFHT1050;
+  WrappedTH1* hNum_DeepCSV_RefTrg_OfflineSel_SignalOR_All;
+  
   //Jet Multi
-  WrappedTH1* hNum_JetMulti_RefTrg_OfflineSel_Signal1BTag;
-  WrappedTH1* hNum_JetMulti_RefTrg_OfflineSel_Signal2BTag;
+  WrappedTH1* hNum_JetMulti_RefTrg_OfflineSel_Signal1BTagCSV;
+  WrappedTH1* hNum_JetMulti_RefTrg_OfflineSel_Signal2BTagCSV;
+  WrappedTH1* hNum_JetMulti_RefTrg_OfflineSel_Signal2BTagDeepCSV;
+  WrappedTH1* hNum_JetMulti_RefTrg_OfflineSel_Signal3BTagCSV;
   WrappedTH1* hNum_JetMulti_RefTrg_OfflineSel_SignalOR;
-  WrappedTH1* hNum_JetMulti_RefTrg_OfflineSel_SignalOR_PFJet450;
-
+  WrappedTH1* hNum_JetMulti_RefTrg_OfflineSel_SignalORwDeepCSV;
+  WrappedTH1* hNum_JetMulti_RefTrg_OfflineSel_SignalOR_PFJet500;
+  WrappedTH1* hNum_JetMulti_RefTrg_OfflineSel_SignalOR_PFHT1050;
+  WrappedTH1* hNum_JetMulti_RefTrg_OfflineSel_SignalOR_All;
+  
   //B-Jet Multi
-  WrappedTH1* hNum_BJetMulti_RefTrg_OfflineSel_Signal1BTag;
-  WrappedTH1* hNum_BJetMulti_RefTrg_OfflineSel_Signal2BTag;
+  WrappedTH1* hNum_BJetMulti_RefTrg_OfflineSel_Signal1BTagCSV;
+  WrappedTH1* hNum_BJetMulti_RefTrg_OfflineSel_Signal2BTagCSV;
+  WrappedTH1* hNum_BJetMulti_RefTrg_OfflineSel_Signal2BTagDeepCSV;
+  WrappedTH1* hNum_BJetMulti_RefTrg_OfflineSel_Signal3BTagCSV;
   WrappedTH1* hNum_BJetMulti_RefTrg_OfflineSel_SignalOR;
-  WrappedTH1* hNum_BJetMulti_RefTrg_OfflineSel_SignalOR_PFJet450;
+  WrappedTH1* hNum_BJetMulti_RefTrg_OfflineSel_SignalORwDeepCSV;
+  WrappedTH1* hNum_BJetMulti_RefTrg_OfflineSel_SignalOR_PFJet500;
+  WrappedTH1* hNum_BJetMulti_RefTrg_OfflineSel_SignalOR_PFHT1050;
+  WrappedTH1* hNum_BJetMulti_RefTrg_OfflineSel_SignalOR_All;
   //---------------------------------------------------------------------
+  
 
+
+  /*
+  
   //---------------------------------------------------------------------
   // TrgEfficiency in slices of Ht and the pt of the 6th Jet  
   //---------------------------------------------------------------------
@@ -196,7 +268,8 @@ private:
   WrappedTH1* h_Num_ht_Vs_70pt90_RefTrg_OfflineSel_OR;
   WrappedTH1* h_Num_ht_Vs_90pt120_RefTrg_OfflineSel_OR;
   //---------------------------------------------------------------------
-
+  */
+  
 };
 
 #include "Framework/interface/SelectorFactory.h"
@@ -204,7 +277,7 @@ REGISTER_SELECTOR(JetTriggersSF);
 
 JetTriggersSF::JetTriggersSF(const ParameterSet& config, const TH1* skimCounters)
   : BaseSelector(config, skimCounters),
-    cfg_PrelimTopMVACut(config, "FakeBMeasurement.minTopMVACut"),
+    //cfg_PrelimTopMVACut(config, "FakeBMeasurement.minTopMVACut"),
     fCommonPlots(config.getParameter<ParameterSet>("CommonPlots"), CommonPlots::kHplus2tbAnalysis, fHistoWrapper), 
     cAllEvents(fEventCounter.addCounter("all events")),
     cControlTrigger(fEventCounter.addCounter("passed cntrl trg")),
@@ -217,14 +290,17 @@ JetTriggersSF::JetTriggersSF(const ParameterSet& config, const TH1* skimCounters
     fBJetSelection(config.getParameter<ParameterSet>("BJetSelection"), fEventCounter, fHistoWrapper, &fCommonPlots, ""),
     cBTaggingSFCounter(fEventCounter.addCounter("b tag SF")),
     fMETSelection(config.getParameter<ParameterSet>("METSelection")), // no subcounter in main counter 
-    fQGLRSelection(config.getParameter<ParameterSet>("QGLRSelection"), fEventCounter, fHistoWrapper, &fCommonPlots, ""),
     fTopSelection(config.getParameter<ParameterSet>("TopSelectionBDT"), fEventCounter, fHistoWrapper, &fCommonPlots, ""),
-    fFatJetSelection(config.getParameter<ParameterSet>("FatJetSelection"), fEventCounter, fHistoWrapper, &fCommonPlots, "Veto"),
     cSelected(fEventCounter.addCounter("Selected Events")),
-    cTrigger_1BTag(fEventCounter.addCounter("passed sig 1BTag")),
-    cTrigger_2BTag(fEventCounter.addCounter("passed sig 2BTag")),
+    cTrigger_1BTagCSV(fEventCounter.addCounter("passed sig 1BTagCSV")),
+    cTrigger_2BTagCSV(fEventCounter.addCounter("passed sig 2BTagCSV")),
+    cTrigger_2BTagDeepCSV(fEventCounter.addCounter("passed sig 2BTagDeepCSV")),
+    cTrigger_3BTagCSV(fEventCounter.addCounter("passed sig 3BTagCSV")),
     cTrigger_OR(fEventCounter.addCounter("passed sig OR")),
-    cTrigger_OR_PFJet450(fEventCounter.addCounter("passed sig OR + PFJet450")),
+    cTrigger_ORwDeepCSV(fEventCounter.addCounter("passed sig OR w 2BTagDeepCSV")),
+    cTrigger_OR_PFJet500(fEventCounter.addCounter("passed sig OR + PFJet450")),
+    cTrigger_OR_PFHT1050(fEventCounter.addCounter("passed sig OR + PFHT1050")),
+    cTrigger_OR_All(fEventCounter.addCounter("passed sig OR + PFJet450 + PFHT1050")),
     cfg_PtBinSetting(config.getParameter<ParameterSet>("CommonPlots.ptBins")),
     cfg_EtaBinSetting(config.getParameter<ParameterSet>("CommonPlots.etaBins"))
 {
@@ -248,9 +324,7 @@ void JetTriggersSF::book(TDirectory *dir) {
   fJetSelection.bookHistograms(dir);
   fBJetSelection.bookHistograms(dir);
   fMETSelection.bookHistograms(dir);
-  fQGLRSelection.bookHistograms(dir);
   fTopSelection.bookHistograms(dir);
-  fFatJetSelection.bookHistograms(dir);
   
   // Book non-common histograms
   
@@ -280,64 +354,122 @@ void JetTriggersSF::book(TDirectory *dir) {
   hDen_CSV_RefTrg_OfflineSel = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hDen_CSV_RefTrg_OfflineSel", "CSV", 20, 0, 1); 
   hDen_JetMulti_RefTrg_OfflineSel = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hDen_JetMulti_RefTrg_OfflineSel", "nJets", 10, 4.5, 14.5);
   hDen_BJetMulti_RefTrg_OfflineSel = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hDen_BJetMulti_RefTrg_OfflineSel", "nBJets", 7, 0.5, 7.5);
+  
   //---------------------------------------------------------------------
   // Numerators
   //---------------------------------------------------------------------
+  
   //6th Jet pt
-  hNum_pt6thJet_RefTrg_OfflineSel_Signal1BTag       = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pt6thJet_RefTrg_OfflineSel_Signal1BTag", "pt", nxbins_pt, xbins_pt);
-  hNum_pt6thJet_RefTrg_OfflineSel_Signal2BTag       = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pt6thJet_RefTrg_OfflineSel_Signal2BTag", "pt", nxbins_pt, xbins_pt);
-  hNum_pt6thJet_RefTrg_OfflineSel_SignalOR          = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pt6thJet_RefTrg_OfflineSel_SignalOR", "pt", nxbins_pt, xbins_pt);
-  hNum_pt6thJet_RefTrg_OfflineSel_SignalOR_PFJet450 = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pt6thJet_RefTrg_OfflineSel_SignalOR_PFJet450", "pt", nxbins_pt, xbins_pt);
+  hNum_pt6thJet_RefTrg_OfflineSel_Signal1BTagCSV     = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pt6thJet_RefTrg_OfflineSel_Signal1BTagCSV", "pt", nxbins_pt, xbins_pt);
+  hNum_pt6thJet_RefTrg_OfflineSel_Signal2BTagCSV     = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pt6thJet_RefTrg_OfflineSel_Signal2BTagCSV", "pt", nxbins_pt, xbins_pt);
+  hNum_pt6thJet_RefTrg_OfflineSel_Signal2BTagDeepCSV = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pt6thJet_RefTrg_OfflineSel_Signal2BTagDeepCSV", "pt", nxbins_pt, xbins_pt);
+  hNum_pt6thJet_RefTrg_OfflineSel_Signal3BTagCSV     = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pt6thJet_RefTrg_OfflineSel_Signal3BTagCSV", "pt", nxbins_pt, xbins_pt);
+  hNum_pt6thJet_RefTrg_OfflineSel_SignalOR           = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pt6thJet_RefTrg_OfflineSel_SignalOR", "pt", nxbins_pt, xbins_pt);
+  hNum_pt6thJet_RefTrg_OfflineSel_SignalORwDeepCSV   = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pt6thJet_RefTrg_OfflineSel_SignalORwDeepCSV", "pt", nxbins_pt, xbins_pt);
+  hNum_pt6thJet_RefTrg_OfflineSel_SignalOR_PFJet500  = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pt6thJet_RefTrg_OfflineSel_SignalOR_PFJet500", "pt", nxbins_pt, xbins_pt);
+  hNum_pt6thJet_RefTrg_OfflineSel_SignalOR_PFHT1050  = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pt6thJet_RefTrg_OfflineSel_SignalOR_PFHT1050", "pt", nxbins_pt, xbins_pt);
+  hNum_pt6thJet_RefTrg_OfflineSel_SignalOR_All       = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pt6thJet_RefTrg_OfflineSel_SignalOR_All", "pt", nxbins_pt, xbins_pt);
   
   //6th Jet eta
-  hNum_eta6thJet_RefTrg_OfflineSel_Signal1BTag       = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_eta6thJet_RefTrg_OfflineSel_Signal1BTag", "eta", nxbins_eta, -1*etaMax , etaMax);
-  hNum_eta6thJet_RefTrg_OfflineSel_Signal2BTag       = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_eta6thJet_RefTrg_OfflineSel_Signal2BTag", "eta", nxbins_eta, -1*etaMax , etaMax);
+  hNum_eta6thJet_RefTrg_OfflineSel_Signal1BTagCSV    = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_eta6thJet_RefTrg_OfflineSel_Signal1BTagCSV", "eta", nxbins_eta, -1*etaMax , etaMax);
+  hNum_eta6thJet_RefTrg_OfflineSel_Signal2BTagCSV    = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_eta6thJet_RefTrg_OfflineSel_Signal2BTagCSV", "eta", nxbins_eta, -1*etaMax , etaMax);
+  hNum_eta6thJet_RefTrg_OfflineSel_Signal2BTagDeepCSV= fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_eta6thJet_RefTrg_OfflineSel_Signal2BTagDeepCSV", "eta", nxbins_eta, -1*etaMax , etaMax);
+  hNum_eta6thJet_RefTrg_OfflineSel_Signal3BTagCSV    = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_eta6thJet_RefTrg_OfflineSel_Signal3BTagCSV", "eta", nxbins_eta, -1*etaMax , etaMax);
   hNum_eta6thJet_RefTrg_OfflineSel_SignalOR          = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_eta6thJet_RefTrg_OfflineSel_SignalOR", "eta", nxbins_eta, -1*etaMax , etaMax);
-  hNum_eta6thJet_RefTrg_OfflineSel_SignalOR_PFJet450 = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_eta6thJet_RefTrg_OfflineSel_SignalOR_PFJet450", "eta", nxbins_eta, -1*etaMax , etaMax);
-
+  hNum_eta6thJet_RefTrg_OfflineSel_SignalORwDeepCSV  = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_eta6thJet_RefTrg_OfflineSel_SignalORwDeepCSV", "eta", nxbins_eta, -1*etaMax , etaMax);
+  hNum_eta6thJet_RefTrg_OfflineSel_SignalOR_PFJet500 = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_eta6thJet_RefTrg_OfflineSel_SignalOR_PFJet500", "eta", nxbins_eta, -1*etaMax , etaMax);
+  hNum_eta6thJet_RefTrg_OfflineSel_SignalOR_PFHT1050 = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_eta6thJet_RefTrg_OfflineSel_SignalOR_PFHT1050", "eta", nxbins_eta, -1*etaMax , etaMax);
+  hNum_eta6thJet_RefTrg_OfflineSel_SignalOR_All      = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_eta6thJet_RefTrg_OfflineSel_SignalOR_All", "eta", nxbins_eta, -1*etaMax , etaMax);
+  
   //6th Jet phi
-  hNum_phi6thJet_RefTrg_OfflineSel_Signal1BTag       = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_phi6thJet_RefTrg_OfflineSel_Signal1BTag", "phi", nxbins_phi, -1*phiMax , phiMax);
-  hNum_phi6thJet_RefTrg_OfflineSel_Signal2BTag       = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_phi6thJet_RefTrg_OfflineSel_Signal2BTag", "phi", nxbins_phi, -1*phiMax , phiMax);
+  hNum_phi6thJet_RefTrg_OfflineSel_Signal1BTagCSV    = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_phi6thJet_RefTrg_OfflineSel_Signal1BTagCSV", "phi", nxbins_phi, -1*phiMax , phiMax);
+  hNum_phi6thJet_RefTrg_OfflineSel_Signal2BTagCSV    = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_phi6thJet_RefTrg_OfflineSel_Signal2BTagCSV", "phi", nxbins_phi, -1*phiMax , phiMax);
+  hNum_phi6thJet_RefTrg_OfflineSel_Signal2BTagDeepCSV= fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_phi6thJet_RefTrg_OfflineSel_Signal2BTagDeepCSV", "phi", nxbins_phi, -1*phiMax , phiMax);
+  hNum_phi6thJet_RefTrg_OfflineSel_Signal3BTagCSV    = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_phi6thJet_RefTrg_OfflineSel_Signal3BTagCSV", "phi", nxbins_phi, -1*phiMax , phiMax);
   hNum_phi6thJet_RefTrg_OfflineSel_SignalOR          = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_phi6thJet_RefTrg_OfflineSel_SignalOR", "phi", nxbins_phi, -1*phiMax , phiMax);
-  hNum_phi6thJet_RefTrg_OfflineSel_SignalOR_PFJet450 = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_phi6thJet_RefTrg_OfflineSel_SignalOR_PFJet450", "phi", nxbins_phi, -1*phiMax , phiMax);
+  hNum_phi6thJet_RefTrg_OfflineSel_SignalORwDeepCSV  = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_phi6thJet_RefTrg_OfflineSel_SignalORwDeepCSV", "phi", nxbins_phi, -1*phiMax , phiMax);
+  hNum_phi6thJet_RefTrg_OfflineSel_SignalOR_PFJet500 = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_phi6thJet_RefTrg_OfflineSel_SignalOR_PFJet500", "phi", nxbins_phi, -1*phiMax , phiMax);
+  hNum_phi6thJet_RefTrg_OfflineSel_SignalOR_PFHT1050 = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_phi6thJet_RefTrg_OfflineSel_SignalOR_PFHT1050", "phi", nxbins_phi, -1*phiMax , phiMax);
+  hNum_phi6thJet_RefTrg_OfflineSel_SignalOR_All      = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_phi6thJet_RefTrg_OfflineSel_SignalOR_All", "phi", nxbins_phi, -1*phiMax , phiMax);
   
   //HT
-  hNum_Ht_RefTrg_OfflineSel_Signal1BTag = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_Ht_RefTrg_OfflineSel_Signal1BTag", "Ht", nxbins_ht, xbins_ht);
-  hNum_Ht_RefTrg_OfflineSel_Signal2BTag = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_Ht_RefTrg_OfflineSel_Signal2BTag", "Ht", nxbins_ht, xbins_ht);
-  hNum_Ht_RefTrg_OfflineSel_SignalOR = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_Ht_RefTrg_OfflineSel_SignalOR", "Ht", nxbins_ht, xbins_ht);
-  hNum_Ht_RefTrg_OfflineSel_SignalOR_PFJet450 = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_Ht_RefTrg_OfflineSel_SignalOR_PFJet450", "Ht", nxbins_ht, xbins_ht);
-
+  hNum_Ht_RefTrg_OfflineSel_Signal1BTagCSV     = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_Ht_RefTrg_OfflineSel_Signal1BTagCSV", "Ht", nxbins_ht, xbins_ht);
+  hNum_Ht_RefTrg_OfflineSel_Signal2BTagCSV     = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_Ht_RefTrg_OfflineSel_Signal2BTagCSV", "Ht", nxbins_ht, xbins_ht);
+  hNum_Ht_RefTrg_OfflineSel_Signal2BTagDeepCSV = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_Ht_RefTrg_OfflineSel_Signal2BTagDeepCSV", "Ht", nxbins_ht, xbins_ht);
+  hNum_Ht_RefTrg_OfflineSel_Signal3BTagCSV     = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_Ht_RefTrg_OfflineSel_Signal3BTagCSV", "Ht", nxbins_ht, xbins_ht);
+  hNum_Ht_RefTrg_OfflineSel_SignalOR           = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_Ht_RefTrg_OfflineSel_SignalOR", "Ht", nxbins_ht, xbins_ht);
+  hNum_Ht_RefTrg_OfflineSel_SignalORwDeepCSV   = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_Ht_RefTrg_OfflineSel_SignalORwDeepCSV", "Ht", nxbins_ht, xbins_ht);
+  hNum_Ht_RefTrg_OfflineSel_SignalOR_PFJet500  = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_Ht_RefTrg_OfflineSel_SignalOR_PFJet500", "Ht", nxbins_ht, xbins_ht);
+  hNum_Ht_RefTrg_OfflineSel_SignalOR_PFHT1050  = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_Ht_RefTrg_OfflineSel_SignalOR_PFHT1050", "Ht", nxbins_ht, xbins_ht);
+  hNum_Ht_RefTrg_OfflineSel_SignalOR_All       = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_Ht_RefTrg_OfflineSel_SignalOR_All", "Ht", nxbins_ht, xbins_ht);
+  
   //PU
-  hNum_pu_RefTrg_OfflineSel_Signal1BTag = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pu_RefTrg_OfflineSel_Signal1BTag", "pu", 11, 0, 55);
-  hNum_pu_RefTrg_OfflineSel_Signal2BTag = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pu_RefTrg_OfflineSel_Signal2BTag", "pu", 11, 0, 55);
-  hNum_pu_RefTrg_OfflineSel_SignalOR    = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pu_RefTrg_OfflineSel_SignalOR","pu", 11, 0, 55);
-  hNum_pu_RefTrg_OfflineSel_SignalOR_PFJet450    = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pu_RefTrg_OfflineSel_SignalOR_PFJet450","pu", 11, 0, 55);
-
+  hNum_pu_RefTrg_OfflineSel_Signal1BTagCSV     = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pu_RefTrg_OfflineSel_Signal1BTagCSV", "pu", 11, 0, 55);
+  hNum_pu_RefTrg_OfflineSel_Signal2BTagCSV     = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pu_RefTrg_OfflineSel_Signal2BTagCSV", "pu", 11, 0, 55);
+  hNum_pu_RefTrg_OfflineSel_Signal2BTagDeepCSV = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pu_RefTrg_OfflineSel_Signal2BTagDeepCSV", "pu", 11, 0, 55);
+  hNum_pu_RefTrg_OfflineSel_Signal3BTagCSV     = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pu_RefTrg_OfflineSel_Signal3BTagCSV", "pu", 11, 0, 55);
+  hNum_pu_RefTrg_OfflineSel_SignalOR           = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pu_RefTrg_OfflineSel_SignalOR", "pu", 11, 0, 55);
+  hNum_pu_RefTrg_OfflineSel_SignalORwDeepCSV   = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pu_RefTrg_OfflineSel_SignalORwDeepCSV", "pu", 11, 0, 55);
+  hNum_pu_RefTrg_OfflineSel_SignalOR_PFJet500  = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pu_RefTrg_OfflineSel_SignalOR_PFJet500", "pu", 11, 0, 55);
+  hNum_pu_RefTrg_OfflineSel_SignalOR_PFHT1050  = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pu_RefTrg_OfflineSel_SignalOR_PFHT1050", "pu", 11, 0, 55);
+  hNum_pu_RefTrg_OfflineSel_SignalOR_All       = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_pu_RefTrg_OfflineSel_SignalOR_All", "pu", 11, 0, 55);
+  
   //b-Jet Multi
-  hNum_nBTagJets_RefTrg_OfflineSel_Signal1BTag = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_nBTagJets_RefTrg_OfflineSel_Signal1BTag", "nbtagjets", nxbins_b, xbins_b);
-  hNum_nBTagJets_RefTrg_OfflineSel_Signal2BTag = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_nBTagJets_RefTrg_OfflineSel_Signal2BTag", "nbtagjets", nxbins_b, xbins_b);
-  hNum_nBTagJets_RefTrg_OfflineSel_SignalOR = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_nBTagJets_RefTrg_OfflineSel_SignalOR", "nbtagjets", nxbins_b, xbins_b);
-  hNum_nBTagJets_RefTrg_OfflineSel_SignalOR_PFJet450 = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_nBTagJets_RefTrg_OfflineSel_SignalOR_PFJet450", "nbtagjets", nxbins_b, xbins_b);
-
+  hNum_nBTagJets_RefTrg_OfflineSel_Signal1BTagCSV     = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_nBTagJets_RefTrg_OfflineSel_Signal1BTagCSV", "nbtagjets", nxbins_b, xbins_b);
+  hNum_nBTagJets_RefTrg_OfflineSel_Signal2BTagCSV     = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_nBTagJets_RefTrg_OfflineSel_Signal2BTagCSV", "nbtagjets", nxbins_b, xbins_b);
+  hNum_nBTagJets_RefTrg_OfflineSel_Signal2BTagDeepCSV = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_nBTagJets_RefTrg_OfflineSel_Signal2BTagDeepCSV", "nbtagjets", nxbins_b, xbins_b);
+  hNum_nBTagJets_RefTrg_OfflineSel_Signal3BTagCSV     = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_nBTagJets_RefTrg_OfflineSel_Signal3BTagCSV", "nbtagjets", nxbins_b, xbins_b);
+  hNum_nBTagJets_RefTrg_OfflineSel_SignalOR           = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_nBTagJets_RefTrg_OfflineSel_SignalOR", "nbtagjets", nxbins_b, xbins_b);
+  hNum_nBTagJets_RefTrg_OfflineSel_SignalORwDeepCSV   = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_nBTagJets_RefTrg_OfflineSel_SignalORwDeepCSV", "nbtagjets", nxbins_b, xbins_b);
+  hNum_nBTagJets_RefTrg_OfflineSel_SignalOR_PFJet500  = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_nBTagJets_RefTrg_OfflineSel_SignalOR_PFJet500", "nbtagjets", nxbins_b, xbins_b);
+  hNum_nBTagJets_RefTrg_OfflineSel_SignalOR_PFHT1050  = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_nBTagJets_RefTrg_OfflineSel_SignalOR_PFHT1050", "nbtagjets", nxbins_b, xbins_b);
+  hNum_nBTagJets_RefTrg_OfflineSel_SignalOR_All       = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_nBTagJets_RefTrg_OfflineSel_SignalOR_All", "nbtagjets", nxbins_b, xbins_b);
+  
   //Jet CSV
-  hNum_CSV_RefTrg_OfflineSel_Signal1BTag = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_CSV_RefTrg_OfflineSel_Signal1BTag", "CSV", 20, 0, 1);
-  hNum_CSV_RefTrg_OfflineSel_Signal2BTag = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_CSV_RefTrg_OfflineSel_Signal2BTag", "CSV", 20, 0, 1);
-  hNum_CSV_RefTrg_OfflineSel_SignalOR    = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_CSV_RefTrg_OfflineSel_SignalOR"   , "CSV", 20, 0, 1);
-  hNum_CSV_RefTrg_OfflineSel_SignalOR_PFJet450    = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_CSV_RefTrg_OfflineSel_SignalOR_PFJet450"   , "CSV", 20, 0, 1);
+  hNum_CSV_RefTrg_OfflineSel_Signal1BTagCSV     = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_CSV_RefTrg_OfflineSel_Signal1BTagCSV", "CSV", 20, 0, 1);
+  hNum_CSV_RefTrg_OfflineSel_Signal2BTagCSV     = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_CSV_RefTrg_OfflineSel_Signal2BTagCSV", "CSV", 20, 0, 1);
+  hNum_CSV_RefTrg_OfflineSel_Signal2BTagDeepCSV = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_CSV_RefTrg_OfflineSel_Signal2BTagDeepCSV", "CSV", 20, 0, 1);
+  hNum_CSV_RefTrg_OfflineSel_Signal3BTagCSV     = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_CSV_RefTrg_OfflineSel_Signal3BTagCSV", "CSV", 20, 0, 1);
+  hNum_CSV_RefTrg_OfflineSel_SignalOR           = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_CSV_RefTrg_OfflineSel_SignalOR", "CSV", 20, 0, 1);
+  hNum_CSV_RefTrg_OfflineSel_SignalORwDeepCSV   = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_CSV_RefTrg_OfflineSel_SignalORwDeepCSV", "CSV", 20, 0, 1);
+  hNum_CSV_RefTrg_OfflineSel_SignalOR_PFJet500  = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_CSV_RefTrg_OfflineSel_SignalOR_PFJet500", "CSV", 20, 0, 1);
+  hNum_CSV_RefTrg_OfflineSel_SignalOR_PFHT1050  = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_CSV_RefTrg_OfflineSel_SignalOR_PFHT1050", "CSV", 20, 0, 1);
+  hNum_CSV_RefTrg_OfflineSel_SignalOR_All       = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_CSV_RefTrg_OfflineSel_SignalOR_All", "CSV", 20, 0, 1);
+  
+  //Jet Deep CSV
+  hNum_DeepCSV_RefTrg_OfflineSel_Signal1BTagCSV     = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_DeepCSV_RefTrg_OfflineSel_Signal1BTagCSV", "Deep CSV", 20, 0, 1);
+  hNum_DeepCSV_RefTrg_OfflineSel_Signal2BTagCSV     = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_DeepCSV_RefTrg_OfflineSel_Signal2BTagCSV", "Deep CSV", 20, 0, 1);
+  hNum_DeepCSV_RefTrg_OfflineSel_Signal2BTagDeepCSV = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_DeepCSV_RefTrg_OfflineSel_Signal2BTagDeepCSV", "Deep CSV", 20, 0, 1);
+  hNum_DeepCSV_RefTrg_OfflineSel_Signal3BTagCSV     = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_DeepCSV_RefTrg_OfflineSel_Signal3BTagCSV", "Deep CSV", 20, 0, 1);
+  hNum_DeepCSV_RefTrg_OfflineSel_SignalOR           = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_DeepCSV_RefTrg_OfflineSel_SignalOR", "Deep CSV", 20, 0, 1);
+  hNum_DeepCSV_RefTrg_OfflineSel_SignalORwDeepCSV   = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_DeepCSV_RefTrg_OfflineSel_SignalORwDeepCSV", "Deep CSV", 20, 0, 1);
+  hNum_DeepCSV_RefTrg_OfflineSel_SignalOR_PFJet500  = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_DeepCSV_RefTrg_OfflineSel_SignalOR_PFJet500", "Deep CSV", 20, 0, 1);
+  hNum_DeepCSV_RefTrg_OfflineSel_SignalOR_PFHT1050  = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_DeepCSV_RefTrg_OfflineSel_SignalOR_PFHT1050", "Deep CSV", 20, 0, 1);
+  hNum_DeepCSV_RefTrg_OfflineSel_SignalOR_All       = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_DeepCSV_RefTrg_OfflineSel_SignalOR_All", "Deep CSV", 20, 0, 1);
   
   //Jet Multi
-  hNum_JetMulti_RefTrg_OfflineSel_Signal1BTag = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_JetMulti_RefTrg_OfflineSel_Signal1BTag", "nJets", 10, 4.5, 14.5);
-  hNum_JetMulti_RefTrg_OfflineSel_Signal2BTag = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_JetMulti_RefTrg_OfflineSel_Signal2BTag", "nJets", 10, 4.5, 14.5);
-  hNum_JetMulti_RefTrg_OfflineSel_SignalOR    = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_JetMulti_RefTrg_OfflineSel_SignalOR"   , "nJets", 10, 4.5, 14.5);
-  hNum_JetMulti_RefTrg_OfflineSel_SignalOR_PFJet450    = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_JetMulti_RefTrg_OfflineSel_SignalOR_PFJet450"   , "nJets", 10, 4.5, 14.5);
+  hNum_JetMulti_RefTrg_OfflineSel_Signal1BTagCSV    = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_JetMulti_RefTrg_OfflineSel_Signal1BTagCSV", "nJets", 10, 4.5, 14.5);
+  hNum_JetMulti_RefTrg_OfflineSel_Signal2BTagCSV    = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_JetMulti_RefTrg_OfflineSel_Signal2BTagCSV", "nJets", 10, 4.5, 14.5);
+  hNum_JetMulti_RefTrg_OfflineSel_Signal2BTagDeepCSV= fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_JetMulti_RefTrg_OfflineSel_Signal2BTagDeepCSV", "nJets", 10, 4.5, 14.5);
+  hNum_JetMulti_RefTrg_OfflineSel_Signal3BTagCSV    = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_JetMulti_RefTrg_OfflineSel_Signal3BTagCSV", "nJets", 10, 4.5, 14.5);
+  hNum_JetMulti_RefTrg_OfflineSel_SignalOR          = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_JetMulti_RefTrg_OfflineSel_SignalOR", "nJets", 10, 4.5, 14.5);
+  hNum_JetMulti_RefTrg_OfflineSel_SignalORwDeepCSV  = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_JetMulti_RefTrg_OfflineSel_SignalORwDeepCSV", "nJets", 10, 4.5, 14.5);
+  hNum_JetMulti_RefTrg_OfflineSel_SignalOR_PFJet500 = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_JetMulti_RefTrg_OfflineSel_SignalOR_PFJet500", "nJets", 10, 4.5, 14.5);
+  hNum_JetMulti_RefTrg_OfflineSel_SignalOR_PFHT1050 = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_JetMulti_RefTrg_OfflineSel_SignalOR_PFHT1050", "nJets", 10, 4.5, 14.5);
+  hNum_JetMulti_RefTrg_OfflineSel_SignalOR_All      = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_JetMulti_RefTrg_OfflineSel_SignalOR_All", "nJets", 10, 4.5, 14.5);
   
   //b-Jet Multi
-  hNum_BJetMulti_RefTrg_OfflineSel_Signal1BTag = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_BJetMulti_RefTrg_OfflineSel_Signal1BTag", "nBJets", 7, 0.5, 7.5);
-  hNum_BJetMulti_RefTrg_OfflineSel_Signal2BTag = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_BJetMulti_RefTrg_OfflineSel_Signal2BTag", "nBJets", 7, 0.5, 7.5);
-  hNum_BJetMulti_RefTrg_OfflineSel_SignalOR    = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_BJetMulti_RefTrg_OfflineSel_SignalOR"   , "nBJets", 7, 0.5, 7.5);
-  hNum_BJetMulti_RefTrg_OfflineSel_SignalOR_PFJet450    = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_BJetMulti_RefTrg_OfflineSel_SignalOR_PFJet450"   , "nBJets", 7, 0.5, 7.5);
-  
-  
+  hNum_BJetMulti_RefTrg_OfflineSel_Signal1BTagCSV     = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_BJetMulti_RefTrg_OfflineSel_Signal1BTagCSV", "nBJets", 7, 0.5, 7.5);
+  hNum_BJetMulti_RefTrg_OfflineSel_Signal2BTagCSV     = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_BJetMulti_RefTrg_OfflineSel_Signal2BTagCSV", "nBJets", 7, 0.5, 7.5);
+  hNum_BJetMulti_RefTrg_OfflineSel_Signal2BTagDeepCSV = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_BJetMulti_RefTrg_OfflineSel_Signal2BTagDeepCSV", "nBJets", 7, 0.5, 7.5);
+  hNum_BJetMulti_RefTrg_OfflineSel_Signal3BTagCSV     = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_BJetMulti_RefTrg_OfflineSel_Signal3BTagCSV", "nBJets", 7, 0.5, 7.5);
+  hNum_BJetMulti_RefTrg_OfflineSel_SignalOR           = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_BJetMulti_RefTrg_OfflineSel_SignalOR", "nBJets", 7, 0.5, 7.5);
+  hNum_BJetMulti_RefTrg_OfflineSel_SignalORwDeepCSV   = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_BJetMulti_RefTrg_OfflineSel_SignalORwDeepCSV", "nBJets", 7, 0.5, 7.5);
+  hNum_BJetMulti_RefTrg_OfflineSel_SignalOR_PFHT1050  = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_BJetMulti_RefTrg_OfflineSel_SignalOR_PFHT1050", "nBJets", 7, 0.5, 7.5);  
+  hNum_BJetMulti_RefTrg_OfflineSel_SignalOR_PFJet500  = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_BJetMulti_RefTrg_OfflineSel_SignalOR_PFJet500", "nBJets", 7, 0.5, 7.5);
+  hNum_BJetMulti_RefTrg_OfflineSel_SignalOR_All       = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "hNum_BJetMulti_RefTrg_OfflineSel_SignalOR_All", "nBJets", 7, 0.5, 7.5);
+    
+  /*
   //---------------------------------------------------------------------
   // In slices of HT and the pt of the 6th Jet
   //---------------------------------------------------------------------
@@ -370,7 +502,7 @@ void JetTriggersSF::book(TDirectory *dir) {
   h_Num_ht_Vs_60pt70_RefTrg_OfflineSel_OR = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir,"Num_ht_Vs_60pt70_RefTrg_OfflineSel_OR","ht in pt slices", nxbins_ht, xbins_ht);
   h_Num_ht_Vs_70pt90_RefTrg_OfflineSel_OR = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir,"Num_ht_Vs_70pt90_RefTrg_OfflineSel_OR","ht in pt slices", nxbins_ht, xbins_ht);
   h_Num_ht_Vs_90pt120_RefTrg_OfflineSel_OR = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir,"Num_ht_Vs_90pt120_RefTrg_OfflineSel_OR","ht in pt slices", nxbins_ht, xbins_ht);
-
+  
   //---------------------------------------------------------------------
   // in slices of ht
   //---------------------------------------------------------------------
@@ -402,6 +534,7 @@ void JetTriggersSF::book(TDirectory *dir) {
   h_Num_pt6thJet_Vs_1250ht1500_RefTrg_OfflineSel_OR = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "Num_pt6thJet_Vs_1250ht1500_RefTrg_OfflineSel_OR", "pt",nxbins_pt, xbins_pt);
   h_Num_pt6thJet_Vs_1500ht2000_RefTrg_OfflineSel_OR = fHistoWrapper.makeTH<TH1F>(HistoLevel::kVital, dir, "Num_pt6thJet_Vs_1500ht2000_RefTrg_OfflineSel_OR", "pt",nxbins_pt, xbins_pt);
   //---------------------------------------------------------------------
+  */
   
   return;
 }
@@ -485,12 +618,13 @@ void JetTriggersSF::process(Long64_t entry) {
   //================================================================================================
   // 9) BJet SF
   //================================================================================================
-  if (0) std::cout << "=== BJet SF" << std::endl;
-  if (fEvent.isMC())
-    {
-      fEventWeight.multiplyWeight(bjetData.getBTaggingScaleFactorEventWeight());
-    }
-  cBTaggingSFCounter.increment();
+  //if (0) std::cout << "=== BJet SF" << std::endl;
+  //if (fEvent.isMC())
+  //  {
+  //    fEventWeight.multiplyWeight(bjetData.getBTaggingScaleFactorEventWeight());
+  //  }
+  //cBTaggingSFCounter.increment();
+  
   
   //================================================================================================
   // - MET selection
@@ -559,30 +693,50 @@ void JetTriggersSF::process(Long64_t entry) {
   // Measuring Eff Vs. other variables, standard cut on pt and Ht is applied on the events.
   Bool_t isEffvsOthers = isEffvsPT and isEffvsHT; 
   
-  
-    
   //================================================================================================   
   // Signal triggers  
   //================================================================================================   
   if (0) std::cout << "=== Signal Trigger" << std::endl;
+
+  SingleBTagCSV_v1 = "HLT_PFHT430_SixPFJet40_PFBTagCSV_1p5";
+  SingleBTagCSV_v2 = "HLT_PFHT430_SixJet40_BTagCSV_p080";
+  bool Passed_SingleBTagCSV    = fEvent.passHLTDecisionByName(SingleBTagCSV_v1) or fEvent.passHLTDecisionByName(SingleBTagCSV_v2);
   
-  // Triggers
-  TriggerName = "HLT_PFHT400_SixJet30_DoubleBTagCSV_p056";
-  bool Passed_HLT_PFHT400_SixJet30_DoubleBTagCSV_p056 = fEvent.passHLTDecisionByName(TriggerName);
+  DoubleBTagCSV_v1 = "HLT_PFHT380_SixJet32_DoubleBTagCSV_p075";
+  DoubleBTagCSV_v2 = "HLT_PFHT380_SixPFJet32_DoublePFBTagCSV_2p2";
+  bool Passed_DoubleBTagCSV    = fEvent.passHLTDecisionByName(DoubleBTagCSV_v1) or fEvent.passHLTDecisionByName(DoubleBTagCSV_v2);
   
-  TriggerName = "HLT_PFHT450_SixJet40_BTagCSV_p056";
-  bool Passed_HLT_PFHT450_SixJet40_BTagCSV_p056 = fEvent.passHLTDecisionByName(TriggerName);
+  TripleBTagCSV_v1 = "HLT_HT300PT30_QuadJet_75_60_45_40_TripeCSV_p07";
+  TripleBTagCSV_v2 = "HLT_PFHT300PT30_QuadPFJet_75_60_45_40_TriplePFBTagCSV_3p0";
+  bool Passed_TripleBTagCSV    = fEvent.passHLTDecisionByName(TripleBTagCSV_v1) or fEvent.passHLTDecisionByName(TripleBTagCSV_v2);
   
-  TriggerName = "HLT_PFJet450";                                           
-  bool Passed_HLT_PFJet450 = fEvent.passHLTDecisionByName(TriggerName);
+  DoubleBTagDeepCSV= "HLT_PFHT380_SixPFJet32_DoublePFBTagDeepCSV_2p2";
+  bool Passed_DoubleBTagDeepCSV= fEvent.passHLTDecisionByName(DoubleBTagDeepCSV);
   
-  bool Passed_OR           = Passed_HLT_PFHT400_SixJet30_DoubleBTagCSV_p056 or Passed_HLT_PFHT450_SixJet40_BTagCSV_p056;
-  bool Passed_OR_PFJet450  = Passed_HLT_PFHT400_SixJet30_DoubleBTagCSV_p056 or Passed_HLT_PFHT450_SixJet40_BTagCSV_p056 or Passed_HLT_PFJet450;
+  PFJet500 = "HLT_PFJet500";
+  bool Passed_PFJet500 = fEvent.passHLTDecisionByName(PFJet500);
   
-  if (Passed_HLT_PFHT450_SixJet40_BTagCSV_p056)       cTrigger_1BTag.increment();
-  if (Passed_HLT_PFHT400_SixJet30_DoubleBTagCSV_p056) cTrigger_2BTag.increment();
-  if (Passed_OR)                                      cTrigger_OR.increment();
-  if (Passed_OR_PFJet450)                             cTrigger_OR_PFJet450.increment();
+  PFHT1050 = "HLT_PFHT1050";
+  bool Passed_PFHT1050 = fEvent.passHLTDecisionByName(PFHT1050);
+  
+  // ===============================================================================================
+  bool Passed_OR = Passed_SingleBTagCSV or Passed_DoubleBTagCSV or Passed_TripleBTagCSV;
+  bool Passed_ORwDeepCSV  = Passed_OR or Passed_DoubleBTagDeepCSV;
+  bool Passed_OR_PFJet500 = Passed_ORwDeepCSV or Passed_PFJet500;
+  bool Passed_OR_PFHT1050 = Passed_ORwDeepCSV or Passed_PFHT1050;
+  bool Passed_OR_All      = Passed_ORwDeepCSV or Passed_PFJet500 or Passed_PFHT1050;
+  // ===============================================================================================
+  // Fill Counters
+  if (Passed_SingleBTagCSV)     cTrigger_1BTagCSV.increment();
+  if (Passed_DoubleBTagCSV)     cTrigger_2BTagCSV.increment();
+  if (Passed_DoubleBTagDeepCSV) cTrigger_2BTagDeepCSV.increment();
+  if (Passed_TripleBTagCSV)     cTrigger_3BTagCSV.increment();
+  if (Passed_OR)                cTrigger_OR.increment();
+  if (Passed_ORwDeepCSV)        cTrigger_ORwDeepCSV.increment();
+  if (Passed_OR_PFJet500)       cTrigger_OR_PFJet500.increment();
+  if (Passed_OR_PFHT1050)       cTrigger_OR_PFHT1050.increment();
+  if (Passed_OR_All)            cTrigger_OR_All.increment();
+  
   
 
   // ===============================================================================================
@@ -621,70 +775,76 @@ void JetTriggersSF::process(Long64_t entry) {
       hDen_JetMulti_RefTrg_OfflineSel   -> Fill(nJets);
       hDen_BJetMulti_RefTrg_OfflineSel  -> Fill(nBJets);
     }
-    
-  
-  // Fill Numerator Plots
   
   // Single B-Tag Trigger 
-  if (Passed_HLT_PFHT450_SixJet40_BTagCSV_p056)
+  if (Passed_SingleBTagCSV)
     {
-      if(isEffvsPT)
-	{
-	  hNum_pt6thJet_RefTrg_OfflineSel_Signal1BTag -> Fill(Pt6thJet);
-	}
-      
-      if(isEffvsHT)
-	{
-	  hNum_Ht_RefTrg_OfflineSel_Signal1BTag -> Fill(HT);
-	}
-      
+      if(isEffvsPT) hNum_pt6thJet_RefTrg_OfflineSel_Signal1BTagCSV -> Fill(Pt6thJet);
+      if(isEffvsHT) hNum_Ht_RefTrg_OfflineSel_Signal1BTagCSV -> Fill(HT);
       if(isEffvsOthers)
 	{
-	  hNum_eta6thJet_RefTrg_OfflineSel_Signal1BTag -> Fill(Eta6thJet);
-	  hNum_phi6thJet_RefTrg_OfflineSel_Signal1BTag -> Fill(Phi6thJet);
-	  hNum_pu_RefTrg_OfflineSel_Signal1BTag        -> Fill(PU);
-	  hNum_nBTagJets_RefTrg_OfflineSel_Signal1BTag -> Fill(nBTagJets);
-	  hNum_JetMulti_RefTrg_OfflineSel_Signal1BTag  -> Fill(nJets);
-	  hNum_BJetMulti_RefTrg_OfflineSel_Signal1BTag -> Fill(nBJets);
-	}
-    }
- 
-  // Double B-Tag Trigger 
-  if (Passed_HLT_PFHT400_SixJet30_DoubleBTagCSV_p056)
-    {
-      if (isEffvsPT)
-	{
-	  hNum_pt6thJet_RefTrg_OfflineSel_Signal2BTag  -> Fill(Pt6thJet);
-	}
-      
-      if (isEffvsHT)
-	{
-	  hNum_Ht_RefTrg_OfflineSel_Signal2BTag        -> Fill(HT);
-	}
-      
-      if (isEffvsOthers)
-	{
-	  hNum_eta6thJet_RefTrg_OfflineSel_Signal2BTag -> Fill(Eta6thJet);
-	  hNum_phi6thJet_RefTrg_OfflineSel_Signal2BTag -> Fill(Phi6thJet);
-	  hNum_pu_RefTrg_OfflineSel_Signal2BTag        -> Fill(PU);
-	  hNum_nBTagJets_RefTrg_OfflineSel_Signal2BTag -> Fill(nBTagJets);
-	  hNum_JetMulti_RefTrg_OfflineSel_Signal2BTag  -> Fill(nJets);
-	  hNum_BJetMulti_RefTrg_OfflineSel_Signal2BTag -> Fill(nBJets);
+	  hNum_eta6thJet_RefTrg_OfflineSel_Signal1BTagCSV -> Fill(Eta6thJet);
+	  hNum_phi6thJet_RefTrg_OfflineSel_Signal1BTagCSV -> Fill(Phi6thJet);
+	  hNum_pu_RefTrg_OfflineSel_Signal1BTagCSV -> Fill(PU);
+	  hNum_nBTagJets_RefTrg_OfflineSel_Signal1BTagCSV -> Fill(nBTagJets);
+	  hNum_JetMulti_RefTrg_OfflineSel_Signal1BTagCSV -> Fill(nJets);
+	  hNum_BJetMulti_RefTrg_OfflineSel_Signal1BTagCSV -> Fill(nBJets);
 	}
     }
   
+  // Double B-Tag Trigger 
+  if (Passed_DoubleBTagCSV)
+    {
+      if (isEffvsPT) hNum_pt6thJet_RefTrg_OfflineSel_Signal2BTagCSV -> Fill(Pt6thJet);
+      if (isEffvsHT) hNum_Ht_RefTrg_OfflineSel_Signal2BTagCSV -> Fill(HT);
+      if (isEffvsOthers)
+	{
+	  hNum_eta6thJet_RefTrg_OfflineSel_Signal2BTagCSV -> Fill(Eta6thJet);
+	  hNum_phi6thJet_RefTrg_OfflineSel_Signal2BTagCSV -> Fill(Phi6thJet);
+	  hNum_pu_RefTrg_OfflineSel_Signal2BTagCSV -> Fill(PU);
+	  hNum_nBTagJets_RefTrg_OfflineSel_Signal2BTagCSV -> Fill(nBTagJets);
+	  hNum_JetMulti_RefTrg_OfflineSel_Signal2BTagCSV -> Fill(nJets);
+	  hNum_BJetMulti_RefTrg_OfflineSel_Signal2BTagCSV -> Fill(nBJets);
+	}
+    }
+  
+  // Double B-Tag Trigger 
+  if (Passed_DoubleBTagDeepCSV)
+    {
+      if (isEffvsPT) hNum_pt6thJet_RefTrg_OfflineSel_Signal2BTagDeepCSV -> Fill(Pt6thJet);
+      if (isEffvsHT) hNum_Ht_RefTrg_OfflineSel_Signal2BTagDeepCSV -> Fill(HT);
+      if (isEffvsOthers)
+	{
+	  hNum_eta6thJet_RefTrg_OfflineSel_Signal2BTagDeepCSV -> Fill(Eta6thJet);
+	  hNum_phi6thJet_RefTrg_OfflineSel_Signal2BTagDeepCSV -> Fill(Phi6thJet);
+	  hNum_pu_RefTrg_OfflineSel_Signal2BTagDeepCSV -> Fill(PU);
+	  hNum_nBTagJets_RefTrg_OfflineSel_Signal2BTagDeepCSV -> Fill(nBTagJets);
+	  hNum_JetMulti_RefTrg_OfflineSel_Signal2BTagDeepCSV -> Fill(nJets);
+	  hNum_BJetMulti_RefTrg_OfflineSel_Signal2BTagDeepCSV -> Fill(nBJets);
+	}
+    }
+  
+  // Double B-Tag Trigger 
+  if (Passed_TripleBTagCSV)
+    {
+      if (isEffvsPT) hNum_pt6thJet_RefTrg_OfflineSel_Signal3BTagCSV -> Fill(Pt6thJet);
+      if (isEffvsHT) hNum_Ht_RefTrg_OfflineSel_Signal3BTagCSV -> Fill(HT);
+      if (isEffvsOthers)
+	{
+	  hNum_eta6thJet_RefTrg_OfflineSel_Signal3BTagCSV -> Fill(Eta6thJet);
+	  hNum_phi6thJet_RefTrg_OfflineSel_Signal3BTagCSV -> Fill(Phi6thJet);
+	  hNum_pu_RefTrg_OfflineSel_Signal3BTagCSV -> Fill(PU);
+	  hNum_nBTagJets_RefTrg_OfflineSel_Signal3BTagCSV -> Fill(nBTagJets);
+	  hNum_JetMulti_RefTrg_OfflineSel_Signal3BTagCSV -> Fill(nJets);
+	  hNum_BJetMulti_RefTrg_OfflineSel_Signal3BTagCSV -> Fill(nBJets);
+	}
+    }
   
   // OR Trigger
   if (Passed_OR)
     {
-      if (isEffvsPT){
-	hNum_pt6thJet_RefTrg_OfflineSel_SignalOR   -> Fill(Pt6thJet);
-      }
-      
-      if (isEffvsHT){
-	hNum_Ht_RefTrg_OfflineSel_SignalOR         -> Fill(HT);
-      }
-      
+      if (isEffvsPT) hNum_pt6thJet_RefTrg_OfflineSel_SignalOR -> Fill(Pt6thJet);
+      if (isEffvsHT) hNum_Ht_RefTrg_OfflineSel_SignalOR -> Fill(HT);
       if (isEffvsOthers)
 	{
 	  hNum_eta6thJet_RefTrg_OfflineSel_SignalOR  -> Fill(Eta6thJet);
@@ -695,30 +855,75 @@ void JetTriggersSF::process(Long64_t entry) {
 	  hNum_BJetMulti_RefTrg_OfflineSel_SignalOR  -> Fill(nBJets);
 	}
     }
-  
-  // OR + PFJet450 Trigger 
-  if (Passed_OR_PFJet450)
+
+  // OR Trigger + 2BTagDeepCSV
+  if (Passed_ORwDeepCSV)
     {
-      if (isEffvsPT)
-	{
-	  hNum_pt6thJet_RefTrg_OfflineSel_SignalOR_PFJet450   -> Fill(Pt6thJet);
-	}
-      if (isEffvsHT)
-	{
-	  hNum_Ht_RefTrg_OfflineSel_SignalOR_PFJet450         -> Fill(HT);
-	}
+      if (isEffvsPT) hNum_pt6thJet_RefTrg_OfflineSel_SignalORwDeepCSV -> Fill(Pt6thJet);
+      if (isEffvsHT) hNum_Ht_RefTrg_OfflineSel_SignalORwDeepCSV -> Fill(HT);
       if (isEffvsOthers)
 	{
-	  hNum_eta6thJet_RefTrg_OfflineSel_SignalOR_PFJet450  -> Fill(Eta6thJet);
-	  hNum_phi6thJet_RefTrg_OfflineSel_SignalOR_PFJet450  -> Fill(Phi6thJet);
-	  hNum_pu_RefTrg_OfflineSel_SignalOR_PFJet450         -> Fill(PU);
-	  hNum_nBTagJets_RefTrg_OfflineSel_SignalOR_PFJet450  -> Fill(nBTagJets);
-	  hNum_JetMulti_RefTrg_OfflineSel_SignalOR_PFJet450   -> Fill(nJets);
-	  hNum_BJetMulti_RefTrg_OfflineSel_SignalOR_PFJet450  -> Fill(nBJets);
+	  hNum_eta6thJet_RefTrg_OfflineSel_SignalORwDeepCSV -> Fill(Eta6thJet);
+	  hNum_phi6thJet_RefTrg_OfflineSel_SignalORwDeepCSV -> Fill(Phi6thJet);
+	  hNum_pu_RefTrg_OfflineSel_SignalORwDeepCSV        -> Fill(PU);
+	  hNum_nBTagJets_RefTrg_OfflineSel_SignalORwDeepCSV -> Fill(nBTagJets);
+	  hNum_JetMulti_RefTrg_OfflineSel_SignalORwDeepCSV  -> Fill(nJets);
+	  hNum_BJetMulti_RefTrg_OfflineSel_SignalORwDeepCSV -> Fill(nBJets);
 	}
     }
-
   
+  // OR + PFJet500 Trigger 
+  if (Passed_OR_PFJet500)
+    {
+      if (isEffvsPT) hNum_pt6thJet_RefTrg_OfflineSel_SignalOR_PFJet500 -> Fill(Pt6thJet);
+      if (isEffvsHT) hNum_Ht_RefTrg_OfflineSel_SignalOR_PFJet500 -> Fill(HT);
+      if (isEffvsOthers)
+	{
+	  hNum_eta6thJet_RefTrg_OfflineSel_SignalOR_PFJet500 -> Fill(Eta6thJet);
+	  hNum_phi6thJet_RefTrg_OfflineSel_SignalOR_PFJet500 -> Fill(Phi6thJet);
+	  hNum_pu_RefTrg_OfflineSel_SignalOR_PFJet500 -> Fill(PU);
+	  hNum_nBTagJets_RefTrg_OfflineSel_SignalOR_PFJet500 -> Fill(nBTagJets);
+	  hNum_JetMulti_RefTrg_OfflineSel_SignalOR_PFJet500 -> Fill(nJets);
+	  hNum_BJetMulti_RefTrg_OfflineSel_SignalOR_PFJet500 -> Fill(nBJets);
+	}
+    }
+  
+  // OR + PFHT1050 Trigger 
+  if (Passed_OR_PFHT1050)
+    {
+      if (isEffvsPT) hNum_pt6thJet_RefTrg_OfflineSel_SignalOR_PFHT1050 -> Fill(Pt6thJet);
+      if (isEffvsHT) hNum_Ht_RefTrg_OfflineSel_SignalOR_PFHT1050 -> Fill(HT);
+      if (isEffvsOthers)
+	{
+	  hNum_eta6thJet_RefTrg_OfflineSel_SignalOR_PFHT1050 -> Fill(Eta6thJet);
+	  hNum_phi6thJet_RefTrg_OfflineSel_SignalOR_PFHT1050 -> Fill(Phi6thJet);
+	  hNum_pu_RefTrg_OfflineSel_SignalOR_PFHT1050 -> Fill(PU);
+	  hNum_nBTagJets_RefTrg_OfflineSel_SignalOR_PFHT1050 -> Fill(nBTagJets);
+	  hNum_JetMulti_RefTrg_OfflineSel_SignalOR_PFHT1050 -> Fill(nJets);
+	  hNum_BJetMulti_RefTrg_OfflineSel_SignalOR_PFHT1050 -> Fill(nBJets);
+	}
+    }
+  
+  
+  // OR + PFJet500 + PFHT1050
+  if (Passed_OR_All)
+    {
+      if (isEffvsPT) hNum_pt6thJet_RefTrg_OfflineSel_SignalOR_All -> Fill(Pt6thJet);
+      if (isEffvsHT) hNum_Ht_RefTrg_OfflineSel_SignalOR_All -> Fill(HT);
+      if (isEffvsOthers)
+	{
+	  hNum_eta6thJet_RefTrg_OfflineSel_SignalOR_All -> Fill(Eta6thJet);
+	  hNum_phi6thJet_RefTrg_OfflineSel_SignalOR_All -> Fill(Phi6thJet);
+	  hNum_pu_RefTrg_OfflineSel_SignalOR_All -> Fill(PU);
+	  hNum_nBTagJets_RefTrg_OfflineSel_SignalOR_All -> Fill(nBTagJets);
+	  hNum_JetMulti_RefTrg_OfflineSel_SignalOR_All -> Fill(nJets);
+	  hNum_BJetMulti_RefTrg_OfflineSel_SignalOR_All -> Fill(nBJets);
+	}
+    }
+  
+  
+  
+  /*
   // ----------------------------------------------------------
   //  Fill Plots with slices in HT and the Pt of the 6th Jet
   // ----------------------------------------------------------
@@ -962,7 +1167,13 @@ void JetTriggersSF::process(Long64_t entry) {
 	}
     }
   
+  */
   
+  
+
+
+
+
   //================================================================================================
   // Finalize
   //================================================================================================
