@@ -541,7 +541,7 @@ def main(opts, args):
     
     # The provided dictionaries are for grouping discriminators
     generateParticle(types, "Tau", {"Isolation": "Isolation", "againstElectron": "AgainstElectron", "againstMuon": "AgainstMuon"})
-    generateParticle(types, "Jet", {"JetTags": "BJetTags", "PUID": "PUID", "ID" : "JetID"})
+    generateParticle(types, "Jet", {"BJetTags": "BJetTags", "PUID": "PUID", "ID" : "JetID"})
     generateParticle(types, "Muon", {"ID": "ID"})
     generateParticle(types, "Electron", {"ID": "ID"})
     generateParticle(types, "GenJet", {})
@@ -551,8 +551,7 @@ def main(opts, args):
     # HLTTau contains only generic momentum and pdgId information, no generation needed
     generateDiscriminator(types, "METFilter", "METFilter")
     generateGenParticles(types, "genParticle")
-    # Marina
-    generateParticle(types, "AK8Jet", {"JetTags": "BJetTags", "PUID": "PUID", "ID" : "JetID"})
+    generateParticle(types, "AK8Jet", {"BJetTags": "BJetTags", "PUID": "PUID", "ID" : "JetID"})
 
     return 0
 
