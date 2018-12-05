@@ -106,6 +106,13 @@ def main():
     from HiggsAnalysis.NtupleAnalysis.parameters.jetTriggers import allSelections
     allSelections.verbose = opts.verbose
     allSelections.histogramAmbientLevel = opts.histoLevel
+    
+    # Selections
+    allSelections.BJetSelection.jetPtCuts = [40.0, 40.0]
+    allSelections.BJetSelection.numberOfBJetsCutValue = 2
+    allSelections.MuonSelection.muonPtCut = 28
+    
+    
     # allSelections.BjetSelection.triggerMatchingApply = True
     # allSelections.TopSelection.ChiSqrCutValue = 100.0
     # allSelections.BJetSelection.numberOfBJetsCutValue = 0

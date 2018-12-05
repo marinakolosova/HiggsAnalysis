@@ -15,7 +15,10 @@ histogramAmbientLevel = "Debug"  # Options: Systematics, Vital, Informative, Deb
 # Trigger
 #================================================================================================
 trigger = hplus2tbAnalysis.allSelections.Trigger
-trigger.triggerOR.append("HLT_IsoMu24") 
+trigger.triggerOR.append("HLT_IsoMu24")
+trigger.triggerOR.append("HLT_IsoMu27")
+trigger.triggerOR.append("HLT_IsoMu30")
+
 
 #================================================================================================
 # MET filter
@@ -31,7 +34,7 @@ eVeto = hplus2tbAnalysis.eVeto
 # Muon selection
 #================================================================================================
 muSelection = hplus2tbAnalysis.muVeto
-muSelection.muonPtCut = 26.0  # Higher than HLT threshold    
+muSelection.muonPtCut = 28.0  # Higher than HLT threshold    
 
 #================================================================================================
 # Tau selection (sync with HToTauNu analysis)
@@ -59,10 +62,18 @@ bjetSelection.numberOfBJetsCutValue = 1
 #================================================================================================
 # Scale Factors
 #================================================================================================
-scaleFactors.setupBtagSFInformation(btagPset               = bjetSelection,
-                                    btagPayloadFilename    = "CSVv2.csv",
-                                    btagEfficiencyFilename = "btageff_HToTB.json",
-                                    direction              = "nominal")
+#if bjetSelection.bjetDiscr == "pfCombinedInclusiveSecondaryVertexV2BJetTags":
+#    scaleFactors.setupBtagSFInformation(btagPset               = bjetSelection,
+#                                        btagPayloadFilename    = "CSVv2_94XSF_V2_B_F.csv",
+#                                        btagEfficiencyFilename = "btageff_HToTB.json",  # FIXME (Marina)
+#                                        direction              = "nominal")
+#elif bjetSelection.bjetDiscr == "pfDeepCSVBJetTags":
+#    scaleFactors.setupBtagSFInformation(btagPset               = bjetSelection,
+#                                        btagPayloadFilename    = "DeepCSV_94XSF_V3_B_F.csv",
+#                                        btagEfficiencyFilename = "btageff_HToTB.json",  # FIXME (Marina)
+#                                        direction              = "nominal")
+#else:
+#    raise Exception("This should never be reached!")
 
 #=================================================================================================
 # QGL selection
@@ -86,10 +97,18 @@ metSelection = hplus2tbAnalysis.metSelection
 # FakeB Measurement Options
 #================================================================================================
 fakeBBjetSelection = hplus2tbAnalysis.fakeBBjetSelection
-scaleFactors.setupBtagSFInformation(btagPset               = fakeBBjetSelection,
-                                    btagPayloadFilename    = "CSVv2.csv",
-                                    btagEfficiencyFilename = "btageff_HToTB.json",
-                                    direction              = "nominal")
+#if fakeBBjetSelection.bjetDiscr == "pfCombinedInclusiveSecondaryVertexV2BJetTags":
+#    scaleFactors.setupBtagSFInformation(btagPset               = fakeBBjetSelection,
+#                                        btagPayloadFilename    = "CSVv2_94XSF_V2_B_F.csv",
+#                                        btagEfficiencyFilename = "btageff_HToTB.json",  # FIXME (Marina)
+#                                        direction              = "nominal")
+#elif fakeBBjetSelection.bjetDiscr == "pfDeepCSVBJetTags":
+#    scaleFactors.setupBtagSFInformation(btagPset               = fakeBBjetSelection,
+#                                        btagPayloadFilename    = "DeepCSV_94XSF_V3_B_F.csv",
+#                                        btagEfficiencyFilename = "btageff_HToTB.json",  # FIXME (Marina)
+#                                        direction              = "nominal")
+#else:
+#    raise Exception("This should never be reached!")
 
 #fakeBTopSelectionBDT = hplus2tbAnalysis.fakeBTopSelectionBDT
 
@@ -131,7 +150,7 @@ allSelections = PSet(
     BJetSelection         = bjetSelection,
     METSelection          = metSelection,
     TopSelectionBDT       = topSelectionBDT,
-    FatJetSelection       = fatjetVeto,
+#    FatJetSelection       = fatjetVeto,
     FakeBMeasurement      = fakeBMeasurement,
     FakeBBjetSelection    = fakeBBjetSelection,
 #    FakeBTopSelectionBDT  = fakeBTopSelectionBDT,

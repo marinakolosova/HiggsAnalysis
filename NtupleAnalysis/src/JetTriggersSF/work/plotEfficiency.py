@@ -10,13 +10,14 @@ USAGE:
 
 
 EXAMPLES:
+./plotEfficiency.py -m JetTriggersSF_181122_045045/ -i "QCD|2017B|2017C|M_" --url
 ./plotEfficiency.py -m /uscms_data/d3/aattikis/workspace/pseudo-multicrab/Trigger/JetTriggersSF_170921_053850_FinalWithCut/ --url
 ./plotEfficiency.py -m /uscms_data/d3/aattikis/workspace/pseudo-multicrab/Trigger/JetTriggersSF_170921_053850_FinalWithCut/ --url -e ext
 ./plotEfficiency.py -m /uscms_data/d3/aattikis/workspace/pseudo-multicrab/JetTriggersSF/multicrab_Hplus2tbAnalysis_v8030_20180223T0905/JetTriggersSF_180308_194450/ -e "MuEnriched" --url
 ./plotEfficiency.py -m /uscms_data/d3/aattikis/workspace/pseudo-multicrab/JetTriggersSF/multicrab_Hplus2tbAnalysis_v8030_20180223T0905/JetTriggersSF_LepVeto_TauVeto_7JetPt30_2BjetsPt40Pt30_180308_194450/ -e "MuEnriched" --url
 
 LAST USED:
-./plotEfficiency.py -m /uscms_data/d3/aattikis/workspace/pseudo-multicrab/JetTriggersSF/multicrab_Hplus2tbAnalysis_v8030_20180223T0905/JetTriggersSF_LepVeto_TauVeto_7JetPt30_2BjetsPt40Pt30_180308_194450/ -e "MuEnriched" --url --paper 
+./plotEfficiency.py -m JetTriggersSF_181127_080345_2BJet_40_30_1Muon_28 --url --verbose
 
 
 '''
@@ -182,7 +183,7 @@ def GetHistoKwargs(histoName, opts):
     histoKwargs = {}
     #_moveLegend = {"dx": -0.10, "dy": -0.53, "dh": -0.2}
     _moveLegend = {"dx": -0.10, "dy": -0.68, "dh": -0.2}
-    yMin1 = 0.5
+    yMin1 = 0.0
     yMax1 = 1.05
     yMin2 = 0.75 #0.7
     yMax2 = 1.21 #1.3
@@ -211,7 +212,7 @@ def GetHistoKwargs(histoName, opts):
     ROOT.gStyle.SetNdivisions(510, "X") 
     if "pt6thjet" in hName:
         kwargs["xlabel"] = "p_{T} (GeV/c)"
-        kwargs["opts"]   = {"xmin": 29.5, "xmax": 120, "ymin": yMin1, "ymax": yMax1}
+        kwargs["opts"]   = {"xmin": 29.5, "xmax": 200, "ymin": yMin1, "ymax": yMax1}
         kwargs["cutBox"] = {"cutValue": 40.0, "fillColor": 16, "box": False, "line": True, "greaterThan": True}
 
     if "eta6thjet" in hName:
@@ -228,7 +229,7 @@ def GetHistoKwargs(histoName, opts):
         kwargs["opts"]   = {"xmin": 300.0, "ymin": yMin1, "ymax": yMax1}
         kwargs["cutBox"]  = {"cutValue": 500.0, "fillColor": 16, "box": False, "line": True, "greaterThan": True}
         n1 = 8 # primary divisions
-        n2 = 5 # second order divisions
+        n2 = 4 # second order divisions
         n3 = 2 # third order divisions
         nDivs = n1 + 100*n2 + 10000*n3
         if 1:
@@ -303,7 +304,7 @@ def GetEfficiency(datasetsMgr, datasets, numerator="Numerator",denominator="Deno
     
     '''
     lumi = GetLumi(datasetsMgr)
-
+        
     # Select Statistic Options
     statOption = ROOT.TEfficiency.kFCP
     '''
@@ -320,37 +321,41 @@ def GetEfficiency(datasetsMgr, datasets, numerator="Numerator",denominator="Deno
     first  = True
     teff   = ROOT.TEfficiency()
     #    teff.SetStatisticOption(statOption)
-
+    
     # For-loop: All datasets
     for dataset in datasets:
-        
+            
         num = dataset.getDatasetRootHisto(numerator)
         den = dataset.getDatasetRootHisto(denominator)
-
-        # 
+        
         if dataset.isMC():
             num.normalizeToLuminosity(lumi)
             den.normalizeToLuminosity(lumi) 
-
+            
         # Get Numerator and Denominator
         n = num.getHistogram()
         d = den.getHistogram()
         
+        myBins = [40, 60, 80, 100, 120, 150, 200]
+        #myBins  = [300, 500, 700, 900, 1100, 1500, 2000]
+        xBins   = array.array('d', myBins)
+        nx      = len(xBins)-1
+        n = n.Rebin(nx, "", xBins)
+        d = d.Rebin(nx, "", xBins)
+        
         if d.GetEntries() == 0 or n.GetEntries() == 0:
             msg =  "Denominator Or Numerator has no entries"
-            Print(ErrorStyle() + msg + NormalStyle(), True)
+            print "Denominator Or Numerator has no entries"
             continue
         
         # Check Negatives
         CheckNegatives(n, d, True)
-        
         # Remove Negatives
         RemoveNegatives(n)
         #RemoveNegatives(d)
        
         NumeratorBins   = n.GetNbinsX()
         DenominatorBins = d.GetNbinsX()
-
 
         # Sanity Check
         if (NumeratorBins != DenominatorBins) :
@@ -359,7 +364,7 @@ def GetEfficiency(datasetsMgr, datasets, numerator="Numerator",denominator="Deno
         nBins = d.GetNbinsX()
         xMin  = d.GetXaxis().GetXmin()
         xMax  = d.GetXaxis().GetXmax()
-        
+
         # ----------------------------------------------------------------------------------------- # 
         #      Ugly hack to ignore EMPTY (in the wanted range) histograms with overflows/underflows
         # ----------------------------------------------------------------------------------------- #
@@ -373,17 +378,17 @@ def GetEfficiency(datasetsMgr, datasets, numerator="Numerator",denominator="Deno
             print "\n"
             print ">>>>>>  Sanity Check:  <<<<<<"
             print "Numerator Mean       = ", n.GetMean()
+            print "Numerator Entries    = ", n.GetEntries()
             print "Numerator RMS        = ", n.GetRMS()
             print "Numerator Integral   = ", n.Integral(1, nBins)
             print "Denominator Mean     = ", d.GetMean()
+            print "Denominator Entries  = ", d.GetEntries()
             print "Denominator RMS      = ", d.GetRMS()
             print "Denominator Integral = ", d.Integral(1, nBins)
-        
+                   
         if (n.GetMean() == 0 or d.GetMean() == 0): continue
         if (n.GetRMS()  == 0 or d.GetRMS()  == 0): continue
         if (n.Integral(1,nBins) == 0 or d.Integral(1,nBins) == 0): continue
-
-        Verbose("Passed the sanity check", True)
         
         eff = ROOT.TEfficiency(n, d)
         eff.SetStatisticOption(statOption)
@@ -396,6 +401,7 @@ def GetEfficiency(datasetsMgr, datasets, numerator="Numerator",denominator="Deno
         weight = 1
         if dataset.isMC():
             weight = dataset.getCrossSection()
+            
         eff.SetWeight(weight)
         
         if first:
@@ -419,6 +425,7 @@ def GetEfficiency(datasetsMgr, datasets, numerator="Numerator",denominator="Deno
     if 0:
         for iBin in range(1,nBins+1):
             print iBin, "x=", n.GetBinLowEdge(iBin)," Efficiency=", teff.GetEfficiency(iBin), " Weight = ", teff.GetWeight()
+            
     return convert2TGraph(teff)
 
 
@@ -434,7 +441,7 @@ def convert2TGraph(tefficiency):
     
     h = tefficiency.GetCopyTotalHisto()
     n = h.GetNbinsX()
-
+    
     xMin= h.GetXaxis().GetXmin()
     xMax= h.GetXaxis().GetXmax()
 
@@ -537,6 +544,8 @@ def getDatasetsToExclude():
 
 def main(opts):
     
+    print "\n **************************************************** MAIN ************************************************* \n"
+    
     # Suppress warnings about weight being re-applied
     ROOT.gErrorIgnoreLevel = ROOT.kError 
 
@@ -563,6 +572,9 @@ def main(opts):
     opts.optMode = ""
     mcrabName    = opts.mcrab
     RunEra       = mcrabName.split("_")[1]
+    
+    print "Run Era = ", RunEra
+    
 
     # Setup ROOT and style
     ROOT.gROOT.SetBatch(opts.batchMode)
@@ -586,7 +598,7 @@ def main(opts):
 
     # Get run-range 
     minRunRange, maxRunRange, runRange = GetRunRange(datasetsMgr)
-
+    
     # Get int lumi
     intLumi  = GetLumi(datasetsMgr)
 
@@ -598,27 +610,39 @@ def main(opts):
     # Print luminisoties and cross-sections
     datasetsMgr.PrintLuminosities()
     datasetsMgr.PrintCrossSections()
-
+    
+    
+    print "Merging All"
     # Default merging & ordering: "Data", "QCD", "SingleTop", "Diboson"
     plots.mergeRenameReorderForDataMC(datasetsMgr)
+    
+    # Print luminisoties and cross-sections
+    datasetsMgr.PrintLuminosities()
+    datasetsMgr.PrintCrossSections()
+    
+    
     
     # Get datasets
     datasetsMgr.mergeMC()
     dataset_Data = datasetsMgr.getDataDatasets()
     dataset_MC   = datasetsMgr.getMCDatasets()
+    
 
+        
     # Define lists of Triggers to be plotted and Variables 
-    xVars   = ["pt6thJet", "eta6thJet", "phi6thJet", "Ht", "nBTagJets", "pu", "JetMulti", "BJetMulti"]
-    trgList = ["1BTag", "2BTag", "OR", "OR_PFJet450"]
+    xVars   = ["pt6thJet", "Ht", "nBTagJets", "JetMulti", "BJetMulti"]
+    trgList = ["Signal1BTagCSV", "Signal2BTagCSV", "Signal3BTagCSV", "SignalOR", "SignalORwDeepCSV", "SignalOR_PFJet500", "SignalOR_PFHT1050", "SignalOR_All",
+               "SignalOR_All_with_QuadPFJetX_BTagCSV_Y_VBF", "SignalOR_All_with_AK8PFHT800_TrimMass50", "SignalOR_All_with_AK8PFJet400_TrimMass30", "SignalOR_All_Everything"]    
+    
     if opts.fast:
-        trgList = ["OR_PFJet450"]
-        xVars   = ["pt6thJet", "Ht"]
+        trgList = ["SignalOR_All"]
+        xVars   = ["pt6thJet","Ht"]
     nPlots  = len(trgList)*len(xVars)
     counter =  0
 
     # For-loop: All signal triggers
     for i, trg in enumerate(trgList, 1):
-        
+
         # For-loop: All x-variables
         for j, xVar in enumerate(xVars, 1):
             counter+=1
@@ -627,7 +651,7 @@ def main(opts):
 
 
             # Define names
-            hNumerator   = "hNum_%s_RefTrg_OfflineSel_Signal%s" % (xVar, trg)
+            hNumerator   = "hNum_%s_RefTrg_OfflineSel_%s" % (xVar, trg)
             hDenominator = "hDen_%s_RefTrg_OfflineSel" % (xVar)
             plotName     = "Eff_%s_%s" % (xVar, trg)
             
@@ -635,7 +659,8 @@ def main(opts):
             _kwargs  = GetHistoKwargs(xVar, opts)
             eff_Data = GetEfficiency(datasetsMgr, dataset_Data, hNumerator, hDenominator , **_kwargs)
             eff_MC   = GetEfficiency(datasetsMgr, dataset_MC, hNumerator, hDenominator, **_kwargs) 
-                       
+            #eff_MC   = GetEfficiency(datasetsMgr, dataset_Data, hNumerator, hDenominator, **_kwargs) 
+            
             # Apply Styles
             styles.dataStyle.apply(eff_Data)
             styles.mcStyle.apply(eff_MC)
@@ -659,10 +684,10 @@ def main(opts):
                                                    
             # Draw
             histograms.addText(0.65, 0.06, "Runs "+ runRange, 17)
-            histograms.addText(0.65, 0.10, "2016", 17)
+            histograms.addText(0.65, 0.10, "2017", 17)
 
             # Save the canvas to a file
-            SavePlot(p, plotName, os.path.join(opts.saveDir, opts.optMode), saveFormats=[".pdf", ".png", ".C"] )
+            SavePlot(p, plotName, os.path.join(opts.saveDir, opts.optMode), saveFormats=[".png", ".pdf", ".C"] )
 
     Print("All plots saved under directory %s" % (ShellStyles.NoteStyle() + aux.convertToURL(opts.saveDir, opts.url) + ShellStyles.NormalStyle()), True)
     return
@@ -691,7 +716,7 @@ if __name__ == "__main__":
 
     # Default Settings
     SEARCHMODE   = "80to1000"
-    DATAERA      = "Run2016"
+    DATAERA      = "Run2017"
     VERBOSE      = False
     BATCHMODE    = True
     SAVEDIR      = None
